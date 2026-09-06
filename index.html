@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PNH — Prototype V0.1</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <canvas id="game-canvas"></canvas>
+
+  <!-- ===================== HUD ===================== -->
+  <div id="hud">
+    <div id="hud-top-left">
+      <div class="badge">
+        <div class="badge-title">PNH</div>
+        <div class="badge-sub">AGENT 01</div>
+      </div>
+      <div id="health-wrap">
+        <div class="label">VIE</div>
+        <div class="bar"><div id="health-bar" class="bar-fill health"></div></div>
+      </div>
+      <div id="level-wrap">NIVEAU <span id="level-value">1</span></div>
+    </div>
+
+    <div id="hud-top-right">
+      <div class="stat">ARGENT : <span id="money-value">500</span> G</div>
+      <div class="stat">RÉPUTATION : <span id="rep-value">10</span></div>
+    </div>
+
+    <div id="mission-panel">
+      <div id="mission-title">MISSION 01</div>
+      <div id="mission-subtitle">ENQUÊTER SUR LE QUARTIER</div>
+      <ul id="objective-list"></ul>
+    </div>
+
+    <div id="minimap-wrap">
+      <canvas id="minimap" width="180" height="180"></canvas>
+      <div id="minimap-label">QUARTIER — CARREFOUR-FEUILLES (fictif)</div>
+    </div>
+
+    <div id="interact-prompt" class="hidden">Appuyez sur <span>E</span> pour interagir</div>
+
+    <div id="dialogue-box" class="hidden">
+      <div id="dialogue-name"></div>
+      <div id="dialogue-text"></div>
+      <div id="dialogue-hint">Appuyez sur <span>E</span> ou cliquez pour continuer</div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <div id="controls-legend">
+      <div><b>ZQSD/WASD</b> Déplacement</div>
+      <div><b>Souris</b> Caméra</div>
+      <div><b>Clic gauche</b> Action</div>
+      <div><b>E</b> Interagir</div>
+      <div><b>ESC</b> Menu</div>
+    </div>
+  </div>
+
+  <!-- ===================== START / POINTER LOCK OVERLAY ===================== -->
+  <div id="start-overlay">
+    <h1>PORT-AU-PRINCE</h1>
+    <h2>Police Nationale d'Haïti — Prototype Jouable V0.1</h2>
+    <p>Incarnez un agent de la PNH. Enquêtez, trouvez un informateur, localisez un membre de gang, et arrêtez-le.</p>
+    <button id="start-btn">CLIQUER POUR JOUER</button>
+    <div class="hint-small">La souris sera capturée par le jeu. Appuyez sur ÉCHAP pour la relâcher.</div>
+  </div>
+
+  <!-- ===================== PAUSE MENU ===================== -->
+  <div id="pause-menu" class="hidden">
+    <div class="pause-box">
+      <h2>MENU — PAUSE</h2>
+      <p>Prototype jouable de "PNH : Port-au-Prince"</p>
+      <ul>
+        <li>Version : V0.1 (démo de gameplay)</li>
+        <li>Quartier : Zone unique (démo)</li>
+        <li>Mission active : Enquêter sur le quartier</li>
+      </ul>
+      <button id="resume-btn">REPRENDRE (ESC)</button>
+    </div>
+  </div>
+
+  <script src="js/vendor/three.min.js"></script>
+  <script src="js/mission.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/npc.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
