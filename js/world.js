@@ -21,6 +21,56 @@ const World = {
     this._buildProps();
     this._buildVehicles();
     this._buildLighting();
+    this._loadRealSchoolModel();
+  },
+
+  // Charge un vrai modèle 3D scanné : "Escuela República de Haití (Solar)"
+  // par superdanielito (Sketchfab, CC-BY-4.0) — voir assets/escuela/LICENSE-escuela.txt
+  _loadRealSchoolModel() {
+    if (typeof THREE.GLTFLoader !== "function") return;
+
+    const loader = new THREE.GLTFLoader();
+    const targetX = 0;
+    const targetZ = -78;
+    const targetSize = 34; // plus grande dimension horizontale souhaitée, en unités monde
+
+    loader.load(
+      "assets/escuela/scene.gltf",
+      (gltf) => {
+        const model = gltf.scene;
+
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+
+        const horizontal = Math.max(size.x, size.z) || 1;
+        const scale = targetSize / horizontal;
+        model.scale.setScalar(scale);
+
+        // Recalcule la boîte englobante après mise à l'échelle pour repositionner au sol
+        const scaledBox = new THREE.Box3().setFromObject(model);
+        const scaledCenter = new THREE.Vector3();
+        scaledBox.getCenter(scaledCenter);
+
+        model.position.x += targetX - scaledCenter.x;
+        model.position.z += targetZ - scaledCenter.z;
+        model.position.y += -scaledBox.min.y;
+
+        this.scene.add(model);
+
+        const footprintRadius = (Math.max(size.x, size.z) * scale) / 2 + 1.5;
+        this.collidables.push({ x: targetX, z: targetZ, radius: footprintRadius });
+        this.markers.school = { x: targetX, z: targetZ, label: "École" };
+
+        this._addSign(targetX, targetZ + footprintRadius + 3, "ÉCOLE RÉPUBLIQUE D'HAÏTI", 0x2f8f5b);
+      },
+      undefined,
+      (err) => {
+        console.warn("Impossible de charger le modèle de l'école (assets/escuela/scene.gltf) :", err);
+      }
+    );
   },
 
   _buildLighting() {

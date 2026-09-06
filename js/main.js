@@ -207,6 +207,7 @@
       // Points affichés sur la mini-carte
       const mapPoints = [
         { x: World.markers.policeStation.x, z: World.markers.policeStation.z, color: "#3d7bff", radius: 6 },
+        ...(World.markers.school ? [{ x: World.markers.school.x, z: World.markers.school.z, color: "#7de37d", radius: 5 }] : []),
         { x: World.markers.market.x, z: World.markers.market.z, color: "#f2c14e", radius: 4 },
       ];
       if (mission.state === MissionState.BRIEFED || mission.state === MissionState.NOT_STARTED) {
