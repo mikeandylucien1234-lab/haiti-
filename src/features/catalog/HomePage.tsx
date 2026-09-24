@@ -3,7 +3,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useCuissons, useCombos, useJus, useSettings, useViandes } from "./queries";
 import { formatHTG } from "@/lib/format";
 import { isStoreOpenNow } from "@/lib/hours";
-import { useRecentOrderItems } from "@/features/orders/useRecentOrderItems";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import type { CartComboItem, CartJusItem } from "@/types/cart";
@@ -92,7 +91,6 @@ export default function HomePage() {
   const { data: viandes = [] } = useViandes();
   const { data: jus = [] } = useJus();
   const { data: combos = [] } = useCombos();
-  const { data: recentItems = [] } = useRecentOrderItems();
   const { addItem } = useCart();
   const { toggle: toggleFavorite, isFavorite } = useFavorites();
   const [query, setQuery] = useState("");
@@ -104,6 +102,37 @@ export default function HomePage() {
   );
 
   const open = settings ? isStoreOpenNow(settings) : true;
+
+  // Suggestions honnêtes pour donner envie dès le lancement : de vrais articles du
+  // catalogue avec leur vrai prix, jamais présentées comme des commandes passées par
+  // d'autres clients (voir la discussion avec le patron : pas de fausse preuve sociale).
+  const suggestions = useMemo(() => {
+    const boeuf = viandes.find((v) => v.slug === "boeuf");
+    const mangue = jus.find((j) => j.slug === "mangue");
+    const items: { key: string; image: string; label: string; detail: string; unitPrice: number; onClick: () => void }[] = [];
+    if (boeuf && minCuissonPrice != null) {
+      items.push({
+        key: "sg-pate-boeuf",
+        image: boeuf.image_path,
+        label: "Pâté bœuf",
+        detail: "Frit à l'huile · Bœuf · le classique",
+        unitPrice: minCuissonPrice + boeuf.price_htg,
+        onClick: () => navigate({ to: "/composer", search: { viande: "boeuf" } as never }),
+      });
+    }
+    if (mangue) {
+      items.push({
+        key: "sg-jus-mangue",
+        image: mangue.image_path,
+        label: mangue.name,
+        detail: mangue.description,
+        unitPrice: mangue.price_htg,
+        onClick: () => quickAddJus(mangue),
+      });
+    }
+    return items;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viandes, jus, minCuissonPrice]);
 
   const bestSellers = useMemo(() => {
     const boeuf = viandes.find((v) => v.slug === "boeuf");
@@ -277,25 +306,21 @@ export default function HomePage() {
 
       <HeroCarousel />
 
-      {recentItems.length > 0 && (
+      {suggestions.length > 0 && (
         <>
-          <SectionTitle title="Commandés récemment" subtitle="Recommandez en un geste" />
+          <SectionTitle title="Envie d'essayer ?" subtitle="Nos suggestions pour commencer" />
           <div className="px-5 flex gap-3 overflow-x-auto pb-1">
-            {recentItems.map((it) => (
+            {suggestions.map((it) => (
               <div key={it.key} className="min-w-[220px] bg-white rounded-2xl border border-brand-cream-3 p-3 flex gap-3">
-                <img
-                  src={it.image}
-                  alt=""
-                  className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
-                />
+                <img src={it.image} alt="" className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm text-brand-ink truncate">{it.label}</p>
                   <p className="text-xs text-brand-sage truncate">{it.detail}</p>
                   <button
-                    onClick={it.reorder}
+                    onClick={it.onClick}
                     className="mt-1 text-xs font-semibold bg-brand-gold-light text-brand-green-dark rounded-full px-2.5 py-1"
                   >
-                    Recommander · {formatHTG(it.unitPrice)}
+                    Ajouter · {formatHTG(it.unitPrice)}
                   </button>
                 </div>
               </div>
