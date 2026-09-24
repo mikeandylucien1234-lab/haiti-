@@ -236,42 +236,44 @@ export default function HomePage() {
     <div>
       <header className="px-5 pt-6 pb-3 bg-brand-cream">
         <h1 className="sr-only">Kreyòl Délis — Pâtés & jus naturels</h1>
-        <div className="flex items-center gap-2 bg-white rounded-full shadow-sm pl-2 pr-2 py-2">
+        <div className="flex items-center gap-2">
           <img
             src="/images/logo.webp"
             alt="Kreyòl Délis"
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-brand-gold"
+            className="w-11 h-11 rounded-full object-cover flex-shrink-0 border-2 border-white shadow-sm"
           />
-          <button className="flex-1 flex flex-col items-start px-1 min-w-0">
-            <span className="flex items-center gap-1 text-[11px] text-brand-sage">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="12" cy="10" r="2.5" />
+          <div className="flex-1 flex items-center gap-2 bg-white rounded-full shadow-sm pl-3 pr-2 py-2 min-w-0">
+            <button className="flex-1 flex flex-col items-start min-w-0">
+              <span className="flex items-center gap-1 text-[11px] text-brand-sage">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg>
+                Livraison
+              </span>
+              <span className="flex items-center gap-1 text-sm font-bold text-brand-ink truncate">
+                Les Cayes, Sud
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </button>
+            <Link
+              to="/mes-commandes"
+              aria-label="Mes commandes"
+              className="relative w-9 h-9 rounded-full bg-brand-cream-2 flex items-center justify-center flex-shrink-0"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-brand-ink">
+                <path
+                  d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9Z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              Livraison
-            </span>
-            <span className="flex items-center gap-1 text-sm font-bold text-brand-ink truncate">
-              Les Cayes, Sud
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-          </button>
-          <Link
-            to="/mes-commandes"
-            aria-label="Mes commandes"
-            className="relative w-10 h-10 rounded-full bg-brand-cream-2 flex items-center justify-center flex-shrink-0"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-brand-ink">
-              <path
-                d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9Z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {!open && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />}
-          </Link>
+              {!open && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />}
+            </Link>
+          </div>
         </div>
 
         <div className="mt-3 relative">
