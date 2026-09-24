@@ -7,6 +7,7 @@ import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useCheckoutDraft } from "@/hooks/useCheckoutDraft";
 import AddressSheet from "@/features/checkout/AddressSheet";
+import SocialFollowSection from "@/features/catalog/SocialFollowSection";
 import type { CartComboItem, CartJusItem } from "@/types/cart";
 import type { Combo } from "@/types/database";
 
@@ -477,6 +478,8 @@ export default function HomePage() {
           </div>
         ))}
       </div>
+
+      <SocialFollowSection />
 
       {comboPicker && (
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40">

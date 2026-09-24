@@ -107,6 +107,33 @@ export default function AdminSettingsPage() {
         </div>
       </section>
 
+      <section className="bg-white rounded-2xl border border-brand-cream-3 p-4">
+        <p className="font-semibold mb-1">Réseaux sociaux</p>
+        <p className="text-xs text-brand-sage mb-3">
+          Utilisés par la section « Suivez-nous » de l'accueil. Elle reste cachée tant que les deux champs sont vides.
+        </p>
+        <label className="block mb-3">
+          <span className="block text-xs text-brand-sage mb-1">Lien TikTok</span>
+          <input
+            type="url"
+            defaultValue={settings.tiktok_url ?? ""}
+            onBlur={(e) => save({ tiktok_url: e.target.value.trim() || null })}
+            placeholder="https://www.tiktok.com/@votrecompte"
+            className="w-full border border-brand-cream-3 rounded-lg px-2 py-1.5 text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="block text-xs text-brand-sage mb-1">Lien Instagram</span>
+          <input
+            type="url"
+            defaultValue={settings.instagram_url ?? ""}
+            onBlur={(e) => save({ instagram_url: e.target.value.trim() || null })}
+            placeholder="https://www.instagram.com/votrecompte"
+            className="w-full border border-brand-cream-3 rounded-lg px-2 py-1.5 text-sm"
+          />
+        </label>
+      </section>
+
       <p className="text-xs text-brand-sage">
         {saving ? "Enregistrement…" : savedAt ? "Enregistré ✓" : ""}
       </p>

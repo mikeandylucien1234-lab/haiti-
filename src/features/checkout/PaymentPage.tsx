@@ -7,6 +7,8 @@ import { formatHTG } from "@/lib/format";
 import { supabase, ensureCustomerSession } from "@/lib/supabase";
 import type { PaymentMethod } from "@/types/database";
 
+type PromoStatus = "idle" | "checking" | "valid" | "invalid";
+
 const METHODS: { id: PaymentMethod; label: string; description: string; badge: string }[] = [
   { id: "moncash", label: "MonCash", description: "Paiement mobile Digicel", badge: "MC" },
   { id: "natcash", label: "NatCash", description: "Paiement mobile Natcom", badge: "NC" },
@@ -22,9 +24,26 @@ export default function PaymentPage() {
   const [method, setMethod] = useState<PaymentMethod>("moncash");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoStatus, setPromoStatus] = useState<PromoStatus>("idle");
+  const [promoDiscount, setPromoDiscount] = useState(0);
 
   const deliveryFee = settings?.delivery_fee_htg ?? 0;
-  const total = subtotal + deliveryFee;
+  const total = Math.max(0, subtotal + deliveryFee - (promoStatus === "valid" ? promoDiscount : 0));
+
+  async function checkPromoCode() {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    setPromoStatus("checking");
+    const { data } = await supabase.from("promo_codes").select("*").eq("code", code).eq("active", true).maybeSingle();
+    if (data) {
+      setPromoDiscount((data as { discount_htg: number }).discount_htg);
+      setPromoStatus("valid");
+    } else {
+      setPromoDiscount(0);
+      setPromoStatus("invalid");
+    }
+  }
 
   async function handlePay() {
     setSubmitting(true);
@@ -61,6 +80,7 @@ export default function PaymentPage() {
           lng: draft.lng,
           location_source: draft.locationSource,
           house_photo_url: draft.housePhotoUrl,
+          promo_code: promoStatus === "valid" ? promoInput.trim().toUpperCase() : null,
           payment_method: method,
         },
       });
@@ -127,6 +147,36 @@ export default function PaymentPage() {
           </p>
         )}
 
+        <div className="bg-white rounded-2xl border border-brand-cream-3 p-4">
+          <p className="font-semibold text-sm mb-2">Code promo</p>
+          <div className="flex gap-2">
+            <input
+              value={promoInput}
+              onChange={(e) => {
+                setPromoInput(e.target.value);
+                setPromoStatus("idle");
+              }}
+              placeholder="Ex. : SOCIAL25"
+              className="flex-1 bg-brand-cream-2 rounded-full px-4 py-2 text-sm outline-none uppercase"
+            />
+            <button
+              onClick={checkPromoCode}
+              disabled={!promoInput.trim() || promoStatus === "checking"}
+              className="text-sm font-semibold text-brand-green px-3 disabled:opacity-50"
+            >
+              {promoStatus === "checking" ? "…" : "Appliquer"}
+            </button>
+          </div>
+          {promoStatus === "valid" && (
+            <p className="text-xs text-brand-green font-medium mt-2">
+              Code appliqué · −{formatHTG(promoDiscount)}
+            </p>
+          )}
+          {promoStatus === "invalid" && (
+            <p className="text-xs text-red-600 mt-2">Code invalide ou expiré.</p>
+          )}
+        </div>
+
         <div className="bg-white rounded-2xl border border-brand-cream-3 p-4 mt-2">
           <p className="font-semibold text-sm mb-2">Récapitulatif</p>
           {items.map((item) => (
@@ -141,6 +191,12 @@ export default function PaymentPage() {
             <span>Livraison · {draft.quartier}</span>
             <span>{formatHTG(deliveryFee)}</span>
           </div>
+          {promoStatus === "valid" && (
+            <div className="flex justify-between text-sm text-brand-green mb-2">
+              <span>Remise ({promoInput.trim().toUpperCase()})</span>
+              <span>−{formatHTG(promoDiscount)}</span>
+            </div>
+          )}
           <div className="border-t border-brand-cream-3 pt-2 flex justify-between font-bold">
             <span>Total</span>
             <span className="text-brand-green">{formatHTG(total)}</span>

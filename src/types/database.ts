@@ -9,6 +9,8 @@ export interface Settings {
   timezone: string;
   delivery_fee_htg: number;
   extra_viande_portion_htg: number;
+  tiktok_url: string | null;
+  instagram_url: string | null;
   updated_at: string;
 }
 
@@ -94,6 +96,8 @@ export interface OrderRow {
   status: OrderStatus;
   subtotal_htg: number;
   delivery_fee_htg: number;
+  discount_htg: number;
+  promo_code: string | null;
   total_htg: number;
   created_at: string;
   updated_at: string;
@@ -127,6 +131,11 @@ export interface Database {
         Row: { user_id: string; full_name: string; created_at: string };
         Insert: { user_id: string; full_name?: string };
         Update: { full_name?: string };
+      };
+      promo_codes: {
+        Row: { code: string; discount_htg: number; description: string; active: boolean; created_at: string };
+        Insert: Partial<{ code: string; discount_htg: number; description: string; active: boolean }>;
+        Update: Partial<{ code: string; discount_htg: number; description: string; active: boolean }>;
       };
     };
   };
