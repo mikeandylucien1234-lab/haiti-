@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuartiers } from "@/features/catalog/queries";
 import { useCheckoutDraft } from "@/hooks/useCheckoutDraft";
+import { uploadHousePhoto } from "@/lib/housePhoto";
 
 export default function DeliveryPage() {
   const router = useRouter();
@@ -10,6 +11,24 @@ export default function DeliveryPage() {
   const { draft, update } = useCheckoutDraft();
   const [locating, setLocating] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError(null);
+    setUploadingPhoto(true);
+    try {
+      const url = await uploadHousePhoto(file);
+      update({ housePhotoUrl: url });
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Échec de l'envoi de la photo.");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }
 
   const missing: string[] = [];
   if (!draft.customerName.trim()) missing.push("nom");
@@ -140,6 +159,43 @@ export default function DeliveryPage() {
             placeholder="Ex. : près de la pharmacie"
             className="w-full bg-white border border-brand-cream-3 rounded-2xl px-4 py-3 text-sm outline-none focus:border-brand-green"
           />
+        </Field>
+
+        <Field label="Photo de votre maison (facultatif)">
+          <p className="text-xs text-brand-sage mb-2 -mt-1">Aide le livreur à repérer votre maison plus facilement.</p>
+          {draft.housePhotoUrl ? (
+            <div className="relative w-24 h-24">
+              <img src={draft.housePhotoUrl} alt="Photo de la maison" className="w-24 h-24 rounded-2xl object-cover" />
+              <button
+                onClick={() => update({ housePhotoUrl: null })}
+                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border border-brand-cream-3 text-brand-ink text-xs flex items-center justify-center"
+                aria-label="Retirer la photo"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingPhoto}
+              className="w-24 h-24 rounded-2xl border-2 border-dashed border-brand-cream-3 bg-white flex items-center justify-center text-brand-sage disabled:opacity-60"
+            >
+              {uploadingPhoto ? (
+                <span className="w-4 h-4 rounded-full border-2 border-brand-green border-t-transparent animate-spin" />
+              ) : (
+                <span className="text-xs">Ajouter</span>
+              )}
+            </button>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/heic"
+            capture="environment"
+            onChange={handlePhotoChange}
+            className="hidden"
+          />
+          {photoError && <p className="text-xs text-red-600 mt-2">{photoError}</p>}
         </Field>
 
         {missing.length > 0 && (

@@ -5,6 +5,8 @@ import { formatHTG } from "@/lib/format";
 import { isStoreOpenNow } from "@/lib/hours";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useCheckoutDraft } from "@/hooks/useCheckoutDraft";
+import AddressSheet from "@/features/checkout/AddressSheet";
 import type { CartComboItem, CartJusItem } from "@/types/cart";
 import type { Combo } from "@/types/database";
 
@@ -93,8 +95,10 @@ export default function HomePage() {
   const { data: combos = [] } = useCombos();
   const { addItem } = useCart();
   const { toggle: toggleFavorite, isFavorite } = useFavorites();
+  const { draft: checkoutDraft } = useCheckoutDraft();
   const [query, setQuery] = useState("");
   const [comboPicker, setComboPicker] = useState<Combo | null>(null);
+  const [addressSheetOpen, setAddressSheetOpen] = useState(false);
 
   const minCuissonPrice = useMemo(
     () => (cuissons.length ? Math.min(...cuissons.map((c) => c.price_htg)) : null),
@@ -243,7 +247,7 @@ export default function HomePage() {
             className="w-11 h-11 rounded-full object-cover flex-shrink-0 border-2 border-white shadow-sm"
           />
           <div className="flex-1 flex items-center gap-2 bg-white rounded-full shadow-sm pl-3 pr-2 py-2 min-w-0">
-            <button className="flex-1 flex flex-col items-start min-w-0">
+            <button onClick={() => setAddressSheetOpen(true)} className="flex-1 flex flex-col items-start min-w-0 text-left">
               <span className="flex items-center gap-1 text-[11px] text-brand-sage">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" strokeLinecap="round" strokeLinejoin="round" />
@@ -252,7 +256,7 @@ export default function HomePage() {
                 Livraison
               </span>
               <span className="flex items-center gap-1 text-sm font-bold text-brand-ink truncate">
-                Les Cayes, Sud
+                {checkoutDraft.quartier || "Les Cayes, Sud"}
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                   <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -504,6 +508,8 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {addressSheetOpen && <AddressSheet onClose={() => setAddressSheetOpen(false)} />}
     </div>
   );
 }

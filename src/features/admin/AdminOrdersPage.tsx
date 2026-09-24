@@ -122,6 +122,16 @@ export default function AdminOrdersPage() {
                   )}
                 </p>
 
+                {order.house_photo_url && (
+                  <a href={order.house_photo_url} target="_blank" rel="noreferrer" className="block mb-3">
+                    <img
+                      src={order.house_photo_url}
+                      alt="Photo de la maison du client"
+                      className="w-24 h-24 rounded-xl object-cover border border-brand-cream-3"
+                    />
+                  </a>
+                )}
+
                 <p className="text-sm font-semibold mb-1">Paiement</p>
                 <p className="text-sm text-brand-sage mb-3">{PAYMENT_LABEL[order.payment_method]}</p>
 

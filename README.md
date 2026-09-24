@@ -52,9 +52,16 @@ supabase/
 - **Suivi de commande** : statut réel en base (`received → preparing → delivering →
   delivered`), mis à jour par le restaurant, et poussé en direct au client via Supabase
   Realtime. Aucun bouton « simuler l'étape suivante ».
-- **Position GPS** : utilise `navigator.geolocation` du téléphone. En cas d'échec ou de
-  refus, aucune coordonnée n'est inventée — le client saisit son adresse (déjà obligatoire
-  de toute façon, en complément de la position).
+- **Adresse de livraison** : accessible en un clic depuis l'en-tête ("Livraison / Les
+  Cayes, Sud") ou pendant le paiement. À l'ouverture, l'app demande d'abord la position
+  exacte du téléphone (`navigator.geolocation`) ; en cas d'échec ou de refus, aucune
+  coordonnée n'est inventée — la personne bascule sur la saisie manuelle (quartier,
+  adresse, point de repère). L'adresse enregistrée est réutilisée automatiquement à la
+  prochaine commande.
+- **Photo de la maison** (facultative) : le client peut joindre une photo de sa façade
+  pour aider le livreur, depuis l'en-tête ou l'étape de livraison. Stockée dans un bucket
+  Supabase Storage dédié (`house-photos`, un dossier par client), visible par le
+  restaurant dans le détail de chaque commande.
 - **« Envie d'essayer ? »** (à la place de « Commandés récemment ») : suggestions
   honnêtes tirées du vrai catalogue (Pâté bœuf, Jus de mangue), avec leur vrai prix.
   Cette section ne prétend jamais que d'autres clients viennent de commander — une

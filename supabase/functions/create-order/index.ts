@@ -47,6 +47,15 @@ interface OrderPayload {
   lng?: number | null;
   location_source: "gps" | "manual";
   payment_method: "moncash" | "natcash" | "cash";
+  house_photo_url?: string | null;
+}
+
+// N'accepte que les URLs pointant vers le dossier de stockage du client lui-même
+// (jamais une URL arbitraire fournie par le navigateur).
+function isOwnHousePhotoUrl(url: string | null | undefined, customerId: string): boolean {
+  if (!url) return false;
+  const expectedPrefix = `${SUPABASE_URL}/storage/v1/object/public/house-photos/${customerId}/`;
+  return url.startsWith(expectedPrefix);
 }
 
 function isStoreOpenNow(
@@ -288,6 +297,7 @@ Deno.serve(async (req) => {
       lat: payload.location_source === "gps" ? payload.lat ?? null : null,
       lng: payload.location_source === "gps" ? payload.lng ?? null : null,
       location_source: payload.location_source,
+      house_photo_url: isOwnHousePhotoUrl(payload.house_photo_url, customerId) ? payload.house_photo_url : null,
       payment_method: payload.payment_method,
       status: "received",
       subtotal_htg: subtotal,

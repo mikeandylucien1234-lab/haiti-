@@ -89,6 +89,7 @@ export interface OrderRow {
   lat: number | null;
   lng: number | null;
   location_source: "gps" | "manual";
+  house_photo_url: string | null;
   payment_method: PaymentMethod;
   status: OrderStatus;
   subtotal_htg: number;

@@ -60,6 +60,7 @@ export default function PaymentPage() {
           lat: draft.lat,
           lng: draft.lng,
           location_source: draft.locationSource,
+          house_photo_url: draft.housePhotoUrl,
           payment_method: method,
         },
       });
