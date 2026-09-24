@@ -55,11 +55,14 @@ supabase/
 - **Position GPS** : utilise `navigator.geolocation` du téléphone. En cas d'échec ou de
   refus, aucune coordonnée n'est inventée — le client saisit son adresse (déjà obligatoire
   de toute façon, en complément de la position).
-- **« Commandés récemment »** : vrai fil d'activité de **tous les clients** (pas
-  seulement le visiteur actuel), mis à jour en direct à chaque nouvelle commande. Il
-  s'appuie sur une vue Postgres (`recent_order_items_feed`) qui n'expose que l'article
-  commandé et son prix — jamais le nom, le téléphone, l'adresse ou l'identifiant du
-  client. Vide tant qu'aucune commande réelle n'a été passée (pas de données fictives).
+- **« Envie d'essayer ? »** (à la place de « Commandés récemment ») : suggestions
+  honnêtes tirées du vrai catalogue (Pâté bœuf, Jus de mangue), avec leur vrai prix.
+  Cette section ne prétend jamais que d'autres clients viennent de commander — une
+  fausse preuve sociale a été explicitement demandée pendant le développement et
+  refusée : afficher de fausses commandes pour faire croire à une activité qui
+  n'existe pas serait trompeur envers vos clients. Dès que de vraies commandes
+  existeront, envisagez plutôt de vrais avis clients ou un compteur réel (plats
+  préparés, etc.).
 - **Espace restaurant** : connexion e-mail/mot de passe, liste des commandes en direct
   avec bannière + son + notification navigateur à l'arrivée d'une nouvelle commande,
   détail complet (composition, adresse, téléphone, paiement), changement de statut,
