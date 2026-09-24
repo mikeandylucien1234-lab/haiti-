@@ -13,11 +13,33 @@ export interface RecentItem {
   reorder: () => void;
 }
 
-const IMAGE_BY_TYPE: Record<string, string> = {
-  pate: "/images/pate-hero.webp",
-  jus: "/images/jus-trio.webp",
-  combo: "/images/combo-hero.webp",
+const PATE_IMAGE_BY_VIANDE: Record<string, string> = {
+  boeuf: "/images/pate-boeuf.webp",
+  poulet: "/images/pate-poulet.webp",
+  hareng: "/images/pate-hareng.webp",
 };
+const JUS_IMAGE_BY_SLUG: Record<string, string> = {
+  mangue: "/images/jus-mangue.webp",
+  ananas: "/images/jus-ananas.webp",
+  fraise: "/images/jus-fraise.webp",
+};
+const JUS_LABEL_BY_SLUG: Record<string, string> = {
+  mangue: "Jus de mangue",
+  ananas: "Jus d'ananas",
+  fraise: "Jus de fraise",
+};
+
+function imageForItem(row: OrderItemRow): string {
+  if (row.item_type === "pate") {
+    const slug = (row.config as { viande_slug?: string }).viande_slug;
+    return (slug && PATE_IMAGE_BY_VIANDE[slug]) || "/images/pate-hero.webp";
+  }
+  if (row.item_type === "jus") {
+    const slug = (row.config as { jus_slug?: string }).jus_slug;
+    return (slug && JUS_IMAGE_BY_SLUG[slug]) || "/images/jus-trio.webp";
+  }
+  return "/images/combo-hero.webp";
+}
 
 export function useRecentOrderItems() {
   const { addItem } = useCart();
@@ -47,7 +69,7 @@ export function useRecentOrderItems() {
         key: row.id,
         label: row.label,
         detail: row.detail,
-        image: IMAGE_BY_TYPE[row.item_type] ?? "/images/pate-hero.webp",
+        image: imageForItem(row),
         unitPrice: row.unit_price_htg,
         reorder: () => {
           if (row.item_type === "pate") {
@@ -84,13 +106,15 @@ export function useRecentOrderItems() {
             };
             addItem(item);
           } else {
-            const cfg = row.config as { combo_slug: string };
+            const cfg = row.config as { combo_slug: string; jus_slug: string };
             const item: CartComboItem = {
               id: crypto.randomUUID(),
               type: "combo",
               combo_slug: cfg.combo_slug,
               name: row.label,
               description: row.detail,
+              jus_slug: cfg.jus_slug,
+              jus_label: JUS_LABEL_BY_SLUG[cfg.jus_slug] ?? cfg.jus_slug,
               quantity: 1,
               unit_price_htg: row.unit_price_htg,
             };

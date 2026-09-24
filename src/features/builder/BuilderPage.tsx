@@ -128,7 +128,7 @@ export default function BuilderPage() {
                   ✓
                 </span>
               )}
-              <img src="/images/pate-hero.webp" alt="" className="w-full h-14 object-contain mb-1" />
+              <img src={v.image_path} alt="" className="w-full h-14 object-contain mb-1" />
               <p className="text-sm font-semibold">{v.label}</p>
               <p className="text-xs text-brand-green font-medium">+{formatHTG(v.price_htg)}</p>
             </button>

@@ -4,9 +4,20 @@ import { formatHTG } from "@/lib/format";
 import { useSettings } from "@/features/catalog/queries";
 import type { CartItem } from "@/types/cart";
 
+const PATE_IMAGE_BY_VIANDE: Record<string, string> = {
+  boeuf: "/images/pate-boeuf.webp",
+  poulet: "/images/pate-poulet.webp",
+  hareng: "/images/pate-hareng.webp",
+};
+const JUS_IMAGE_BY_SLUG: Record<string, string> = {
+  mangue: "/images/jus-mangue.webp",
+  ananas: "/images/jus-ananas.webp",
+  fraise: "/images/jus-fraise.webp",
+};
+
 function itemImage(item: CartItem) {
-  if (item.type === "pate") return "/images/pate-hero.webp";
-  if (item.type === "jus") return "/images/jus-trio.webp";
+  if (item.type === "pate") return PATE_IMAGE_BY_VIANDE[item.viande_slug] ?? "/images/pate-hero.webp";
+  if (item.type === "jus") return JUS_IMAGE_BY_SLUG[item.jus_slug] ?? "/images/jus-trio.webp";
   return "/images/combo-hero.webp";
 }
 
@@ -23,6 +34,7 @@ function itemDetail(item: CartItem) {
     parts.push(item.extra_labels.length ? item.extra_labels.join(", ") : "Sans extra");
     return parts.filter(Boolean).join(" · ");
   }
+  if (item.type === "combo") return `${item.description} · ${item.jus_label}`;
   return item.description;
 }
 

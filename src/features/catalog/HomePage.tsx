@@ -6,6 +6,7 @@ import { isStoreOpenNow } from "@/lib/hours";
 import { useRecentOrderItems } from "@/features/orders/useRecentOrderItems";
 import { useCart } from "@/hooks/useCart";
 import type { CartComboItem, CartJusItem } from "@/types/cart";
+import type { Combo } from "@/types/database";
 
 function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
@@ -25,6 +26,7 @@ export default function HomePage() {
   const { data: recentItems = [] } = useRecentOrderItems();
   const { addItem } = useCart();
   const [query, setQuery] = useState("");
+  const [comboPicker, setComboPicker] = useState<Combo | null>(null);
 
   const minCuissonPrice = useMemo(
     () => (cuissons.length ? Math.min(...cuissons.map((c) => c.price_htg)) : null),
@@ -46,17 +48,28 @@ export default function HomePage() {
     addItem(item);
   }
 
-  function quickAddCombo(c: (typeof combos)[number]) {
+  function addComboWithJus(c: Combo, jusSlug: string) {
+    const chosenJus = jus.find((j) => j.slug === jusSlug);
     const item: CartComboItem = {
       id: crypto.randomUUID(),
       type: "combo",
       combo_slug: c.slug,
       name: c.name,
       description: c.description,
+      jus_slug: jusSlug,
+      jus_label: chosenJus?.name ?? jusSlug,
       quantity: 1,
       unit_price_htg: c.price_htg,
     };
     addItem(item);
+  }
+
+  function quickAddCombo(c: Combo) {
+    if (c.jus_choice_allowed) {
+      setComboPicker(c);
+      return;
+    }
+    addComboWithJus(c, c.jus_slug);
   }
 
   return (
@@ -191,7 +204,7 @@ export default function HomePage() {
             search={{ viande: v.slug } as never}
             className="bg-white rounded-2xl border border-brand-cream-3 p-3"
           >
-            <img src="/images/pate-hero.webp" alt="" className="w-full h-20 object-contain mb-2" />
+            <img src={v.image_path} alt="" className="w-full h-20 object-contain mb-2" />
             <p className="font-semibold text-sm">Pâté {v.label.toLowerCase()}</p>
             <p className="text-xs text-brand-sage">{v.slug === "boeuf" ? "Frit · le classique" : v.slug === "poulet" ? "Frit · épicé" : "Frit · hareng saur"}</p>
             <p className="text-sm font-bold text-brand-green mt-1">
@@ -250,6 +263,37 @@ export default function HomePage() {
           </div>
         ))}
       </div>
+
+      {comboPicker && (
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40">
+          <div className="w-full max-w-[480px] bg-brand-cream rounded-t-3xl p-5">
+            <div className="mx-auto w-10 h-1.5 bg-brand-cream-3 rounded-full mb-4" />
+            <p className="font-bold mb-1">{comboPicker.name}</p>
+            <p className="text-sm text-brand-sage mb-4">Choisissez votre jus</p>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {jus.map((j) => (
+                <button
+                  key={j.id}
+                  onClick={() => {
+                    addComboWithJus(comboPicker, j.slug);
+                    setComboPicker(null);
+                  }}
+                  className="bg-white rounded-2xl border border-brand-cream-3 p-2 text-center"
+                >
+                  <img src={j.image_path} alt="" className="w-full h-14 object-contain mb-1" />
+                  <p className="text-xs font-semibold">{j.name.replace("Jus de ", "").replace("Jus d'", "")}</p>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setComboPicker(null)}
+              className="w-full border border-brand-green text-brand-green rounded-full py-3 font-semibold"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

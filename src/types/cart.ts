@@ -28,6 +28,8 @@ export interface CartComboItem {
   combo_slug: string;
   name: string;
   description: string;
+  jus_slug: string;
+  jus_label: string;
   quantity: number;
   unit_price_htg: number;
 }

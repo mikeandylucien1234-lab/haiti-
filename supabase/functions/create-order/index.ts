@@ -29,8 +29,12 @@ type PateItem = {
   quantity: number;
 };
 type JusItem = { type: "jus"; jus_slug: string; quantity: number };
-type ComboItem = { type: "combo"; combo_slug: string; quantity: number };
+type ComboItem = { type: "combo"; combo_slug: string; jus_slug?: string; quantity: number };
 type IncomingItem = PateItem | JusItem | ComboItem;
+
+const RATE_LIMIT_WINDOW_MINUTES = 15;
+const RATE_LIMIT_MAX_ORDERS = 3;
+const HAITI_PHONE_RE = /^\+509\d{8}$/;
 
 interface OrderPayload {
   items: IncomingItem[];
@@ -95,12 +99,38 @@ Deno.serve(async (req) => {
   }
 
   if (!payload.items?.length) return json({ error: "Panier vide" }, 400);
+  if (payload.items.length > 30) return json({ error: "Panier trop volumineux" }, 400);
   if (!payload.customer_name?.trim()) return json({ error: "Nom requis" }, 400);
-  if (!payload.phone?.trim()) return json({ error: "Téléphone requis" }, 400);
+  const phone = payload.phone?.trim() ?? "";
+  if (!HAITI_PHONE_RE.test(phone)) {
+    return json({ error: "Numéro de téléphone invalide (format attendu : +509 suivi de 8 chiffres)" }, 400);
+  }
   if (!payload.quartier?.trim()) return json({ error: "Quartier requis" }, 400);
   if (!payload.address?.trim()) return json({ error: "Adresse requise" }, 400);
   if (!["moncash", "natcash", "cash"].includes(payload.payment_method)) {
     return json({ error: "Mode de paiement invalide" }, 400);
+  }
+
+  // Anti-spam : limite le nombre de commandes récentes par identité anonyme et par
+  // numéro de téléphone, pour empêcher un script d'inonder l'espace restaurant de
+  // fausses commandes. Simple et sans service tiers ; voir README pour une option
+  // plus robuste (Cloudflare Turnstile) si le spam persiste malgré ça.
+  const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60_000).toISOString();
+  const [{ count: byCustomer }, { count: byPhone }] = await Promise.all([
+    admin.from("orders").select("id", { count: "exact", head: true }).eq("customer_id", customerId).gte(
+      "created_at",
+      since,
+    ),
+    admin.from("orders").select("id", { count: "exact", head: true }).eq("phone", phone).gte(
+      "created_at",
+      since,
+    ),
+  ]);
+  if ((byCustomer ?? 0) >= RATE_LIMIT_MAX_ORDERS || (byPhone ?? 0) >= RATE_LIMIT_MAX_ORDERS) {
+    return json(
+      { error: "Trop de commandes envoyées récemment. Réessayez dans quelques minutes, ou appelez le restaurant." },
+      429,
+    );
   }
 
   const [{ data: settings }, { data: cuissons }, { data: viandes }, { data: extras }, { data: jusList }, {
@@ -117,7 +147,14 @@ Deno.serve(async (req) => {
 
   if (!settings) return json({ error: "Réglages indisponibles" }, 500);
   if (!isStoreOpenNow(settings)) {
-    return json({ error: "La prise de commandes est fermée pour le moment (9h–19h)." }, 409);
+    return json(
+      {
+        error: `La prise de commandes est fermée pour le moment (${settings.opening_time.slice(0, 5)}–${
+          settings.closing_time.slice(0, 5)
+        }).`,
+      },
+      409,
+    );
   }
   if (!quartiers?.some((q) => q.name === payload.quartier)) {
     return json({ error: "Quartier de livraison invalide" }, 400);
@@ -199,13 +236,30 @@ Deno.serve(async (req) => {
     } else if (item.type === "combo") {
       const combo = comboBySlug.get(item.combo_slug);
       if (!combo) return json({ error: "Combo invalide" }, 400);
+
+      // Le Combo Délis laisse choisir le jus ; le Combo Duo reste figé (composition
+      // du prototype) : on ignore alors tout jus_slug envoyé par le client.
+      let jusSlug = combo.jus_slug;
+      if (combo.jus_choice_allowed && item.jus_slug) {
+        const chosenJus = jusBySlug.get(item.jus_slug);
+        if (!chosenJus) return json({ error: "Jus de combo invalide" }, 400);
+        jusSlug = chosenJus.slug;
+      }
+      const jus = jusBySlug.get(jusSlug);
+      const jusLabel = jus ? jus.name.replace(/^Jus (de |d')/i, "") : jusSlug;
+      const viande = viandeBySlug.get(combo.pate_viande_slug);
+      const cuisson = cuissonBySlug.get(combo.pate_cuisson_slug);
+      const detail = `${combo.pate_count} pâté${combo.pate_count > 1 ? "s" : ""} ${
+        viande?.label.toLowerCase() ?? ""
+      } (${cuisson?.label.toLowerCase() ?? ""}) + ${combo.jus_count} jus de ${jusLabel.toLowerCase()}`;
+
       orderItems.push({
         item_type: "combo",
         label: combo.name,
-        detail: combo.description,
+        detail,
         unit_price_htg: combo.price_htg,
         quantity,
-        config: { combo_slug: combo.slug },
+        config: { combo_slug: combo.slug, jus_slug: jusSlug },
       });
       subtotal += combo.price_htg * quantity;
     } else {

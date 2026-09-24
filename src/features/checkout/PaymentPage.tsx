@@ -46,7 +46,7 @@ export default function PaymentPage() {
         if (item.type === "jus") {
           return { type: "jus", jus_slug: item.jus_slug, quantity: item.quantity };
         }
-        return { type: "combo", combo_slug: item.combo_slug, quantity: item.quantity };
+        return { type: "combo", combo_slug: item.combo_slug, jus_slug: item.jus_slug, quantity: item.quantity };
       });
 
       const { data, error: fnError } = await supabase.functions.invoke("create-order", {

@@ -62,11 +62,20 @@ supabase/
   détail complet (composition, adresse, téléphone, paiement), changement de statut,
   édition des prix/disponibilité, réglage des frais de livraison, horaires et
   ouverture/fermeture manuelle de la prise de commandes.
-- **Horaires** : tous les jours 9h–19h (heure de Les Cayes), modifiables dans
-  Réglages. La commande est refusée côté serveur en dehors de ces heures ou si la
-  boutique est fermée manuellement.
-- **Combos** : composition figée dans le code, comme demandé — Combo Délis = pâté bœuf
-  frit + jus mangue, Combo Duo = 2 pâtés bœuf frit + 2 jus mangue. Aucun choix client.
+- **Horaires** : tous les jours 5h–20h (heure de Les Cayes / America/Port-au-Prince),
+  modifiables dans Réglages. La commande est refusée côté serveur en dehors de ces
+  heures ou si la boutique est fermée manuellement.
+- **Combos** : comme dans le prototype — Combo Délis = 1 pâté bœuf frit + 1 jus **au
+  choix du client** (mangue/ananas/fraise) ; Combo Duo = 2 pâtés bœuf frit + 2 jus
+  mangue, entièrement figé, aucun choix. Le prix du Combo Délis ne change pas selon le
+  jus choisi. Le choix envoyé par le client est revalidé côté serveur ; pour le Duo,
+  tout choix envoyé par erreur est ignoré (toujours mangue).
+- **Anti-spam** : l'Edge Function refuse une commande si la même identité anonyme ou le
+  même numéro de téléphone a déjà passé 3 commandes dans les 15 dernières minutes
+  (HTTP 429). C'est une protection simple, sans service tiers, qui suffit contre un
+  script basique. Si le spam persiste malgré ça, l'étape suivante recommandée est
+  d'ajouter un [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/)
+  (captcha invisible, gratuit) sur la page de paiement — dites-le-moi et je le branche.
 
 ## Paiement — MonCash / NatCash / paiement à la livraison
 

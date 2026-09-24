@@ -27,6 +27,7 @@ export interface Viande {
   slug: string;
   label: string;
   price_htg: number;
+  image_path: string;
   sort_order: number;
   active: boolean;
 }
@@ -64,6 +65,7 @@ export interface Combo {
   pate_count: number;
   jus_slug: string;
   jus_count: number;
+  jus_choice_allowed: boolean;
   sort_order: number;
   active: boolean;
 }
