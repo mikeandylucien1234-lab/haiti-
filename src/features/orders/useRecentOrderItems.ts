@@ -1,8 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase, ensureCustomerSession } from "@/lib/supabase";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { useCart } from "@/hooks/useCart";
 import type { CartComboItem, CartJusItem, CartPateItem } from "@/types/cart";
 import type { OrderItemRow } from "@/types/database";
+
+type FeedRow = Pick<OrderItemRow, "id" | "item_type" | "label" | "detail" | "unit_price_htg" | "config"> & {
+  created_at: string;
+};
 
 export interface RecentItem {
   key: string;
@@ -28,8 +33,25 @@ const JUS_LABEL_BY_SLUG: Record<string, string> = {
   ananas: "Jus d'ananas",
   fraise: "Jus de fraise",
 };
+const VIANDE_LABEL_BY_SLUG: Record<string, string> = {
+  boeuf: "Bœuf",
+  poulet: "Poulet",
+  hareng: "Hareng",
+};
+const CUISSON_LABEL_BY_SLUG: Record<string, string> = {
+  frit_huile: "Frit à l'huile",
+  au_four: "Au four",
+};
+const EXTRA_LABEL_BY_SLUG: Record<string, string> = {
+  oeuf_dur: "Œuf dur",
+  fromage: "Fromage",
+  avocat: "Avocat",
+  tomate: "Tomate",
+  pikliz: "Pikliz maison",
+  piment_bouc: "Piment bouc",
+};
 
-function imageForItem(row: OrderItemRow): string {
+function imageForItem(row: FeedRow): string {
   if (row.item_type === "pate") {
     const slug = (row.config as { viande_slug?: string }).viande_slug;
     return (slug && PATE_IMAGE_BY_VIANDE[slug]) || "/images/pate-hero.webp";
@@ -41,31 +63,50 @@ function imageForItem(row: OrderItemRow): string {
   return "/images/combo-hero.webp";
 }
 
+// Clé de regroupement : deux articles identiques (même composition) ne doivent
+// apparaître qu'une fois dans le fil, même si plusieurs clients l'ont commandé.
+function dedupeKey(row: FeedRow): string {
+  return `${row.item_type}:${JSON.stringify(row.config)}`;
+}
+
 export function useRecentOrderItems() {
   const { addItem } = useCart();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("recent-order-items-feed")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "order_items" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["recent-order-items"] });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return useQuery({
     queryKey: ["recent-order-items"],
     queryFn: async (): Promise<RecentItem[]> => {
-      const session = await ensureCustomerSession();
-      if (!session) return [];
-
-      const { data: orders } = await supabase
-        .from("orders")
-        .select("id")
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      const lastOrder = (orders as { id: string }[] | null)?.[0];
-      if (!lastOrder) return [];
-
-      const { data: items } = await supabase
-        .from("order_items")
+      // Vrai fil d'activité : les dernières commandes de TOUS les clients (aucune
+      // donnée personnelle exposée), pas seulement celles du visiteur actuel.
+      const { data } = await supabase
+        .from("recent_order_items_feed")
         .select("*")
-        .eq("order_id", lastOrder.id)
-        .limit(2);
+        .limit(30);
 
-      return ((items as OrderItemRow[]) ?? []).map((row) => ({
+      const rows = (data as FeedRow[]) ?? [];
+      const seen = new Set<string>();
+      const deduped: FeedRow[] = [];
+      for (const row of rows) {
+        const key = dedupeKey(row);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        deduped.push(row);
+        if (deduped.length >= 6) break;
+      }
+
+      return deduped.map((row) => ({
         key: row.id,
         label: row.label,
         detail: row.detail,
@@ -83,12 +124,12 @@ export function useRecentOrderItems() {
               id: crypto.randomUUID(),
               type: "pate",
               cuisson_slug: cfg.cuisson_slug,
-              cuisson_label: "",
+              cuisson_label: CUISSON_LABEL_BY_SLUG[cfg.cuisson_slug] ?? cfg.cuisson_slug,
               viande_slug: cfg.viande_slug,
-              viande_label: "",
+              viande_label: VIANDE_LABEL_BY_SLUG[cfg.viande_slug] ?? cfg.viande_slug,
               extra_viande_portions: cfg.extra_viande_portions ?? 0,
               extra_slugs: cfg.extra_slugs ?? [],
-              extra_labels: [],
+              extra_labels: (cfg.extra_slugs ?? []).map((s) => EXTRA_LABEL_BY_SLUG[s] ?? s),
               quantity: 1,
               unit_price_htg: row.unit_price_htg,
             };

@@ -127,6 +127,19 @@ export interface Database {
         Insert: { user_id: string; full_name?: string };
         Update: { full_name?: string };
       };
+      recent_order_items_feed: {
+        Row: {
+          id: string;
+          item_type: "pate" | "jus" | "combo";
+          label: string;
+          detail: string;
+          unit_price_htg: number;
+          config: Record<string, unknown>;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+      };
     };
   };
 }
