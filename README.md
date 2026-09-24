@@ -93,8 +93,9 @@ supabase/
   l'accueil, avec un code (`SOCIAL25`) vérifié et appliqué côté serveur à la commande
   suivante — jamais confiance sur un montant envoyé par le navigateur, et un code ne
   peut être utilisé qu'une seule fois par client (par identité et par téléphone). La
-  section reste cachée tant qu'aucun lien TikTok/Instagram n'est renseigné dans
-  Réglages (aucun faux lien affiché). Comme il n'existe aucun moyen de vérifier
+  section est toujours visible ; tant qu'aucun lien TikTok/Instagram n'est renseigné
+  dans Réglages, elle affiche « Bientôt disponible » à la place des boutons (aucun faux
+  lien affiché). Comme il n'existe aucun moyen de vérifier
   automatiquement qu'un client a vraiment suivi le compte, c'est une offre basée sur la
   confiance, comme la plupart des promos « suivez-nous » — pas une fausse activité
   présentée comme réelle.

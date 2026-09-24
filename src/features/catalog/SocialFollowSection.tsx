@@ -25,8 +25,9 @@ export default function SocialFollowSection() {
 
   const hasTikTok = !!settings?.tiktok_url;
   const hasInstagram = !!settings?.instagram_url;
+  const hasAnyLink = hasTikTok || hasInstagram;
 
-  if (!promo || (!hasTikTok && !hasInstagram)) return null;
+  if (!promo) return null;
 
   function copyCode() {
     if (!promo) return;
@@ -41,34 +42,48 @@ export default function SocialFollowSection() {
       <div className="rounded-2xl bg-brand-green-dark text-white p-5">
         <h2 className="text-lg font-extrabold">Suivez-nous, gagnez {promo.discount_htg} HTG</h2>
         <p className="text-sm opacity-80 mt-1">
-          Abonnez-vous à Kreyòl Délis sur TikTok ou Instagram, puis utilisez ce code à votre prochaine
-          commande.
+          {hasAnyLink
+            ? "Abonnez-vous à Kreyòl Délis sur TikTok ou Instagram, puis utilisez ce code à votre prochaine commande."
+            : "Nos comptes TikTok et Instagram arrivent bientôt. En attendant, ce code est déjà valable."}
         </p>
 
-        <div className="flex gap-3 mt-4">
-          {hasTikTok && (
-            <a
-              href={settings!.tiktok_url!}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 bg-white text-brand-ink rounded-full py-2.5 font-semibold text-sm"
-            >
+        {hasAnyLink ? (
+          <div className="flex gap-3 mt-4">
+            {hasTikTok && (
+              <a
+                href={settings!.tiktok_url!}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 bg-white text-brand-ink rounded-full py-2.5 font-semibold text-sm"
+              >
+                <TikTokIcon />
+                TikTok
+              </a>
+            )}
+            {hasInstagram && (
+              <a
+                href={settings!.instagram_url!}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 bg-white text-brand-ink rounded-full py-2.5 font-semibold text-sm"
+              >
+                <InstagramIcon />
+                Instagram
+              </a>
+            )}
+          </div>
+        ) : (
+          <div className="flex gap-3 mt-4">
+            <span className="flex-1 flex items-center justify-center gap-2 bg-white/10 text-white/70 rounded-full py-2.5 font-semibold text-sm">
               <TikTokIcon />
-              TikTok
-            </a>
-          )}
-          {hasInstagram && (
-            <a
-              href={settings!.instagram_url!}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 bg-white text-brand-ink rounded-full py-2.5 font-semibold text-sm"
-            >
+              Bientôt disponible
+            </span>
+            <span className="flex-1 flex items-center justify-center gap-2 bg-white/10 text-white/70 rounded-full py-2.5 font-semibold text-sm">
               <InstagramIcon />
-              Instagram
-            </a>
-          )}
-        </div>
+              Bientôt disponible
+            </span>
+          </div>
+        )}
 
         <button
           onClick={copyCode}
