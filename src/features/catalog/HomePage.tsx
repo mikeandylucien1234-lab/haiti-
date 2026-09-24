@@ -1,23 +1,92 @@
 import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useCuissons, useCombos, useJus, useSettings, useViandes } from "./queries";
 import { formatHTG } from "@/lib/format";
 import { isStoreOpenNow } from "@/lib/hours";
 import { useRecentOrderItems } from "@/features/orders/useRecentOrderItems";
 import { useCart } from "@/hooks/useCart";
+import { useFavorites } from "@/hooks/useFavorites";
 import type { CartComboItem, CartJusItem } from "@/types/cart";
 import type { Combo } from "@/types/database";
 
-function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
+function SectionTitle({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: { label: string; onClick: () => void };
+}) {
   return (
-    <div className="px-5 mt-8 mb-3">
-      <h2 className="text-xl font-bold text-brand-ink">{title}</h2>
-      {subtitle && <p className="text-sm text-brand-sage">{subtitle}</p>}
+    <div className="px-5 mt-8 mb-3 flex items-start justify-between gap-3">
+      <div>
+        <h2 className="text-xl font-bold text-brand-ink">{title}</h2>
+        {subtitle && <p className="text-sm text-brand-sage">{subtitle}</p>}
+      </div>
+      {action && (
+        <button onClick={action.onClick} className="text-sm font-semibold text-brand-green whitespace-nowrap pt-1">
+          {action.label}
+        </button>
+      )}
     </div>
   );
 }
 
+const HERO_SLIDES = [
+  {
+    image: "/images/banner-1.webp",
+    kicker: "Gou se vrè",
+    title: "natirèl !",
+    text: "Pâté ki fè w sonje lakay, ak jî natirèl ki plen gou.",
+  },
+  {
+    image: "/images/banner-2.webp",
+    kicker: "Bon gou,",
+    title: "natirèlman !",
+    text: "Pâté ki fè w sonje lakay, ak jî natirèl ki plen gou.",
+  },
+];
+
+function HeroCarousel() {
+  const [index, setIndex] = useState(0);
+  return (
+    <div className="px-5 mt-5">
+      <div className="rounded-2xl overflow-hidden relative bg-brand-green text-white">
+        {HERO_SLIDES.map((slide, i) => (
+          <div key={slide.image} className={i === index ? "block" : "hidden"}>
+            <img src={slide.image} alt="" className="w-full h-36 object-cover opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-green-dark/90 via-brand-green-dark/40 to-transparent flex flex-col justify-center px-5">
+              <img src="/images/logo.webp" alt="" className="w-9 h-9 rounded-full mb-2" />
+              <p className="text-sm font-semibold">{slide.kicker}</p>
+              <p className="text-xl font-extrabold text-brand-gold">{slide.title}</p>
+              <p className="text-[11px] mt-1 max-w-[65%] opacity-90">{slide.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-center gap-1.5 mt-2">
+        {HERO_SLIDES.map((slide, i) => (
+          <button
+            key={slide.image}
+            onClick={() => setIndex(i)}
+            aria-label={`Aller à la diapositive ${i + 1}`}
+            className={`h-1.5 rounded-full transition-all ${i === index ? "w-4 bg-brand-green" : "w-1.5 bg-brand-cream-3"}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function pateSubtitle(slug: string) {
+  if (slug === "boeuf") return "Frit · le classique";
+  if (slug === "poulet") return "Frit · épicé";
+  return "Frit · hareng saur";
+}
+
 export default function HomePage() {
+  const navigate = useNavigate();
   const { data: settings } = useSettings();
   const { data: cuissons = [] } = useCuissons();
   const { data: viandes = [] } = useViandes();
@@ -25,6 +94,7 @@ export default function HomePage() {
   const { data: combos = [] } = useCombos();
   const { data: recentItems = [] } = useRecentOrderItems();
   const { addItem } = useCart();
+  const { toggle: toggleFavorite, isFavorite } = useFavorites();
   const [query, setQuery] = useState("");
   const [comboPicker, setComboPicker] = useState<Combo | null>(null);
 
@@ -34,6 +104,67 @@ export default function HomePage() {
   );
 
   const open = settings ? isStoreOpenNow(settings) : true;
+
+  const bestSellers = useMemo(() => {
+    const boeuf = viandes.find((v) => v.slug === "boeuf");
+    const poulet = viandes.find((v) => v.slug === "poulet");
+    const delis = combos.find((c) => c.slug === "delis");
+    const mangue = jus.find((j) => j.slug === "mangue");
+    const fraise = jus.find((j) => j.slug === "fraise");
+    const items: { key: string; image: string; title: string; subtitle: string; price: string; onClick: () => void }[] = [];
+    if (boeuf && minCuissonPrice != null) {
+      items.push({
+        key: "bs-pate-boeuf",
+        image: boeuf.image_path,
+        title: "Pâté bœuf",
+        subtitle: pateSubtitle("boeuf"),
+        price: `dès ${formatHTG(minCuissonPrice + boeuf.price_htg)}`,
+        onClick: () => navigate({ to: "/composer", search: { viande: "boeuf" } as never }),
+      });
+    }
+    if (delis) {
+      items.push({
+        key: "bs-combo-delis",
+        image: delis.image_path,
+        title: delis.name,
+        subtitle: delis.description,
+        price: formatHTG(delis.price_htg),
+        onClick: () => quickAddCombo(delis),
+      });
+    }
+    if (mangue) {
+      items.push({
+        key: "bs-jus-mangue",
+        image: mangue.image_path,
+        title: mangue.name,
+        subtitle: mangue.description,
+        price: formatHTG(mangue.price_htg),
+        onClick: () => quickAddJus(mangue),
+      });
+    }
+    if (poulet && minCuissonPrice != null) {
+      items.push({
+        key: "bs-pate-poulet",
+        image: poulet.image_path,
+        title: "Pâté poulet",
+        subtitle: pateSubtitle("poulet"),
+        price: `dès ${formatHTG(minCuissonPrice + poulet.price_htg)}`,
+        onClick: () => navigate({ to: "/composer", search: { viande: "poulet" } as never }),
+      });
+    }
+    if (fraise) {
+      items.push({
+        key: "bs-jus-fraise",
+        image: fraise.image_path,
+        title: fraise.name,
+        subtitle: fraise.description,
+        price: formatHTG(fraise.price_htg),
+        onClick: () => quickAddJus(fraise),
+      });
+    }
+    return items;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viandes, jus, combos, minCuissonPrice]);
 
   function quickAddJus(j: (typeof jus)[number]) {
     const item: CartJusItem = {
@@ -144,19 +275,7 @@ export default function HomePage() {
         </a>
       </div>
 
-      <div className="px-5 mt-5">
-        <div className="rounded-2xl overflow-hidden relative bg-brand-green text-white">
-          <img src="/images/banner-1.webp" alt="" className="w-full h-36 object-cover opacity-90" />
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-green-dark/90 via-brand-green-dark/40 to-transparent flex flex-col justify-center px-5">
-            <img src="/images/logo.webp" alt="" className="w-9 h-9 rounded-full mb-2" />
-            <p className="text-sm font-semibold">Gou se vrè</p>
-            <p className="text-xl font-extrabold text-brand-gold">natirèl !</p>
-            <p className="text-[11px] mt-1 max-w-[65%] opacity-90">
-              Pâté ki fè w sonje lakay, ak jî natirèl ki plen gou.
-            </p>
-          </div>
-        </div>
-      </div>
+      <HeroCarousel />
 
       {recentItems.length > 0 && (
         <>
@@ -185,8 +304,47 @@ export default function HomePage() {
         </>
       )}
 
-      <SectionTitle title="Nos pâtés" subtitle="Frits ou au four, farce du jour" />
+      {bestSellers.length > 0 && (
+        <>
+          <SectionTitle title="Nos best-sellers" subtitle="Les préférés des Cayes cette semaine" />
+          <div className="px-5 flex gap-3 overflow-x-auto pb-1">
+            {bestSellers.map((it) => (
+              <button
+                key={it.key}
+                onClick={it.onClick}
+                className="min-w-[130px] bg-white rounded-2xl border border-brand-cream-3 p-3 text-left"
+              >
+                <img src={it.image} alt="" className="w-full h-16 object-contain mb-2" />
+                <p className="font-semibold text-sm">{it.title}</p>
+                <p className="text-xs text-brand-sage truncate">{it.subtitle}</p>
+                <p className="text-sm font-bold text-brand-green mt-1">{it.price}</p>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      <SectionTitle
+        title="Nos pâtés"
+        subtitle="Frits ou au four, farce du jour"
+        action={{ label: "Composer", onClick: () => navigate({ to: "/composer" }) }}
+      />
       <div className="px-5 grid grid-cols-2 gap-3">
+        {viandes.map((v) => (
+          <Link
+            key={v.id}
+            to="/composer"
+            search={{ viande: v.slug } as never}
+            className="bg-white rounded-2xl border border-brand-cream-3 p-3"
+          >
+            <img src={v.image_path} alt="" className="w-full h-20 object-contain mb-2" />
+            <p className="font-semibold text-sm">Pâté {v.label.toLowerCase()}</p>
+            <p className="text-xs text-brand-sage">{pateSubtitle(v.slug)}</p>
+            <p className="text-sm font-bold text-brand-green mt-1">
+              dès {formatHTG((minCuissonPrice ?? 0) + v.price_htg)}
+            </p>
+          </Link>
+        ))}
         <Link
           to="/composer"
           className="col-span-2 bg-brand-green text-white rounded-2xl p-4 flex items-center justify-between"
@@ -197,28 +355,36 @@ export default function HomePage() {
           </div>
           <span className="text-2xl">→</span>
         </Link>
-        {viandes.map((v) => (
-          <Link
-            key={v.id}
-            to="/composer"
-            search={{ viande: v.slug } as never}
-            className="bg-white rounded-2xl border border-brand-cream-3 p-3"
-          >
-            <img src={v.image_path} alt="" className="w-full h-20 object-contain mb-2" />
-            <p className="font-semibold text-sm">Pâté {v.label.toLowerCase()}</p>
-            <p className="text-xs text-brand-sage">{v.slug === "boeuf" ? "Frit · le classique" : v.slug === "poulet" ? "Frit · épicé" : "Frit · hareng saur"}</p>
-            <p className="text-sm font-bold text-brand-green mt-1">
-              dès {formatHTG((minCuissonPrice ?? 0) + v.price_htg)}
-            </p>
-          </Link>
-        ))}
       </div>
 
       <div id="jus" />
-      <SectionTitle title="Nos jus naturels" subtitle="Pressés chaque matin · 33 cl" />
+      <SectionTitle
+        title="Nos jus naturels"
+        subtitle="Pressés chaque matin · 33 cl"
+        action={{ label: "Tout voir", onClick: () => document.getElementById("jus")?.scrollIntoView({ behavior: "smooth" }) }}
+      />
       <div className="px-5 flex gap-3 overflow-x-auto pb-1">
         {jus.map((j) => (
-          <div key={j.id} className="min-w-[150px] bg-white rounded-2xl border border-brand-cream-3 p-3">
+          <div key={j.id} className="min-w-[150px] bg-white rounded-2xl border border-brand-cream-3 p-3 relative">
+            <button
+              onClick={() => toggleFavorite(j.slug)}
+              aria-label={isFavorite(j.slug) ? `Retirer ${j.name} des favoris` : `Ajouter ${j.name} aux favoris`}
+              className="absolute top-2 right-2 text-brand-ink"
+            >
+              {isFavorite(j.slug) ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 20s-7-4.35-9.5-8.5C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4 2.5C10.5 6.2 12 5 14 5c3.5 0 5 3.5 3.5 6.5C15 15.65 12 20 12 20Z" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path
+                    d="M12 20s-7-4.35-9.5-8.5C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4 2.5C10.5 6.2 12 5 14 5c3.5 0 5 3.5 3.5 6.5C15 15.65 12 20 12 20Z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </button>
             <img src={j.image_path} alt={j.name} className="w-full h-20 object-contain mb-2" />
             <p className="font-semibold text-sm">{j.name}</p>
             <p className="text-xs text-brand-sage">{j.description}</p>

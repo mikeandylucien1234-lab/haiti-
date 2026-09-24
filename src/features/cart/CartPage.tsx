@@ -41,7 +41,7 @@ function itemDetail(item: CartItem) {
 export default function CartPage() {
   const router = useRouter();
   const navigate = useNavigate();
-  const { items, setQuantity, removeItem, subtotal } = useCart();
+  const { items, setQuantity, subtotal } = useCart();
   const { data: settings } = useSettings();
   const deliveryFee = settings?.delivery_fee_htg ?? 0;
   const total = subtotal + deliveryFee;
@@ -93,13 +93,6 @@ export default function CartPage() {
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="text-brand-sage text-xs self-start"
-                  aria-label="Retirer l'article"
-                >
-                  ✕
-                </button>
               </div>
             ))}
 

@@ -7,6 +7,7 @@ import DeliveryPage from "@/features/checkout/DeliveryPage";
 import PaymentPage from "@/features/checkout/PaymentPage";
 import ConfirmationPage from "@/features/checkout/ConfirmationPage";
 import OrdersPage from "@/features/orders/OrdersPage";
+import FavoritesPage from "@/features/catalog/FavoritesPage";
 import { lazyRouteComponent } from "@tanstack/react-router";
 
 // L'espace restaurant n'est jamais visité par un client : on l'exclut du bundle principal.
@@ -29,6 +30,7 @@ const confirmationRoute = createRoute({
   component: ConfirmationPage,
 });
 const ordersRoute = createRoute({ getParentRoute: () => rootRoute, path: "/mes-commandes", component: OrdersPage });
+const favoritesRoute = createRoute({ getParentRoute: () => rootRoute, path: "/favoris", component: FavoritesPage });
 
 const adminLoginRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -64,6 +66,7 @@ const routeTree = rootRoute.addChildren([
   paymentRoute,
   confirmationRoute,
   ordersRoute,
+  favoritesRoute,
   adminLoginRoute,
   adminLayoutRoute.addChildren([adminOrdersRoute, adminCatalogRoute, adminSettingsRoute]),
 ]);
