@@ -39,7 +39,7 @@ function UserIcon({ active }: { active: boolean }) {
 
 const NAV_ITEMS = [
   { to: "/", label: "Accueil", icon: HomeIcon },
-  { to: "/mes-commandes", label: "Favoris", icon: HeartIcon },
+  { to: "/favoris", label: "Favoris", icon: HeartIcon },
   { to: "/panier", label: "Panier", icon: BagIcon },
   { to: "/mes-commandes", label: "Profil", icon: UserIcon },
 ] as const;
@@ -57,17 +57,17 @@ export default function RootLayout() {
     );
   }
 
-  const showNav = ["/", "/mes-commandes", "/panier"].includes(pathname);
+  const showNav = ["/", "/mes-commandes", "/favoris"].includes(pathname);
 
   return (
     <div className="app-shell shadow-xl">
-      <main className="flex-1 pb-24">
+      <main className={`flex-1 ${showNav ? "pb-24" : ""}`}>
         <Outlet />
       </main>
       {showNav && (
         <nav className="fixed bottom-0 inset-x-0 mx-auto max-w-[480px] bg-white border-t border-brand-cream-3 px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around z-30">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
-            const active = pathname === to && (label !== "Favoris" || pathname === "/mes-commandes");
+            const active = pathname === to;
             const isCart = label === "Panier";
             return (
               <Link
