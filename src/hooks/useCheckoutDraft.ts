@@ -9,6 +9,7 @@ export interface CheckoutDraft {
   lat: number | null;
   lng: number | null;
   locationSource: "gps" | "manual";
+  housePhotoUrl: string | null;
 }
 
 const STORAGE_KEY = "kd_checkout_draft_v1";
@@ -22,6 +23,7 @@ const EMPTY: CheckoutDraft = {
   lat: null,
   lng: null,
   locationSource: "manual",
+  housePhotoUrl: null,
 };
 
 function load(): CheckoutDraft {
