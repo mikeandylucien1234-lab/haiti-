@@ -99,3 +99,26 @@ export function useQuartiers() {
     },
   });
 }
+
+export interface PromoCode {
+  code: string;
+  discount_htg: number;
+  description: string;
+  active: boolean;
+}
+
+export function useSocialPromoCode() {
+  return useQuery({
+    queryKey: ["promo-code", "social"],
+    queryFn: async (): Promise<PromoCode | null> => {
+      const { data, error } = await supabase
+        .from("promo_codes")
+        .select("*")
+        .eq("code", "SOCIAL25")
+        .eq("active", true)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as unknown as PromoCode) ?? null;
+    },
+  });
+}

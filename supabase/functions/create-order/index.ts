@@ -48,6 +48,7 @@ interface OrderPayload {
   location_source: "gps" | "manual";
   payment_method: "moncash" | "natcash" | "cash";
   house_photo_url?: string | null;
+  promo_code?: string | null;
 }
 
 // N'accepte que les URLs pointant vers le dossier de stockage du client lui-même
@@ -277,7 +278,40 @@ Deno.serve(async (req) => {
   }
 
   const deliveryFee = settings.delivery_fee_htg;
-  const total = subtotal + deliveryFee;
+
+  // Code promo (ex: abonnement réseaux sociaux) : vérifié et appliqué ici, jamais
+  // fait confiance à un montant envoyé par le navigateur. Un code ne peut être
+  // utilisé qu'une fois par client (par identité anonyme ET par téléphone).
+  let discount = 0;
+  let appliedPromoCode: string | null = null;
+  const requestedCode = payload.promo_code?.trim().toUpperCase();
+  if (requestedCode) {
+    const { data: promo } = await admin
+      .from("promo_codes")
+      .select("*")
+      .eq("code", requestedCode)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (!promo) {
+      return json({ error: "Code promo invalide ou expiré." }, 400);
+    }
+
+    const { count: alreadyRedeemed } = await admin
+      .from("promo_code_redemptions")
+      .select("id", { count: "exact", head: true })
+      .eq("code", requestedCode)
+      .or(`customer_id.eq.${customerId},phone.eq.${phone}`);
+
+    if ((alreadyRedeemed ?? 0) > 0) {
+      return json({ error: "Ce code promo a déjà été utilisé." }, 400);
+    }
+
+    discount = Math.min(promo.discount_htg, subtotal + deliveryFee);
+    appliedPromoCode = requestedCode;
+  }
+
+  const total = subtotal + deliveryFee - discount;
 
   const { data: orderNumberData, error: orderNumberError } = await admin.rpc("next_order_number");
   if (orderNumberError || !orderNumberData) {
@@ -302,6 +336,8 @@ Deno.serve(async (req) => {
       status: "received",
       subtotal_htg: subtotal,
       delivery_fee_htg: deliveryFee,
+      discount_htg: discount,
+      promo_code: appliedPromoCode,
       total_htg: total,
     })
     .select()
@@ -318,6 +354,15 @@ Deno.serve(async (req) => {
   if (itemsError) {
     await admin.from("orders").delete().eq("id", order.id);
     return json({ error: "Impossible d'enregistrer les articles", detail: itemsError.message }, 500);
+  }
+
+  if (appliedPromoCode) {
+    await admin.from("promo_code_redemptions").insert({
+      code: appliedPromoCode,
+      customer_id: customerId,
+      phone,
+      order_id: order.id,
+    });
   }
 
   return json({ order });

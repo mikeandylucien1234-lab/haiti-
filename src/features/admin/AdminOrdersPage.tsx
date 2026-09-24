@@ -148,11 +148,19 @@ export default function AdminOrdersPage() {
                   ))}
                 </div>
 
-                <div className="flex justify-between text-sm mb-3">
-                  <span className="text-brand-sage">Sous-total / Livraison</span>
-                  <span>
-                    {formatHTG(order.subtotal_htg)} + {formatHTG(order.delivery_fee_htg)}
-                  </span>
+                <div className="mb-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-brand-sage">Sous-total / Livraison</span>
+                    <span>
+                      {formatHTG(order.subtotal_htg)} + {formatHTG(order.delivery_fee_htg)}
+                    </span>
+                  </div>
+                  {order.discount_htg > 0 && (
+                    <div className="flex justify-between text-sm text-brand-green">
+                      <span>Remise ({order.promo_code})</span>
+                      <span>−{formatHTG(order.discount_htg)}</span>
+                    </div>
+                  )}
                 </div>
 
                 {order.status !== "delivered" ? (
