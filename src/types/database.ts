@@ -133,9 +133,28 @@ export interface Database {
         Update: { full_name?: string };
       };
       promo_codes: {
-        Row: { code: string; discount_htg: number; description: string; active: boolean; created_at: string };
-        Insert: Partial<{ code: string; discount_htg: number; description: string; active: boolean }>;
-        Update: Partial<{ code: string; discount_htg: number; description: string; active: boolean }>;
+        Row: {
+          code: string;
+          discount_htg: number;
+          description: string;
+          active: boolean;
+          free_delivery: boolean;
+          created_at: string;
+        };
+        Insert: Partial<{
+          code: string;
+          discount_htg: number;
+          description: string;
+          active: boolean;
+          free_delivery: boolean;
+        }>;
+        Update: Partial<{
+          code: string;
+          discount_htg: number;
+          description: string;
+          active: boolean;
+          free_delivery: boolean;
+        }>;
       };
     };
   };

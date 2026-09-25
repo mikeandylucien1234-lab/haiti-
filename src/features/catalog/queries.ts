@@ -105,20 +105,29 @@ export interface PromoCode {
   discount_htg: number;
   description: string;
   active: boolean;
+  free_delivery: boolean;
 }
 
-export function useSocialPromoCode() {
+function usePromoCodeByCode(code: string) {
   return useQuery({
-    queryKey: ["promo-code", "social"],
+    queryKey: ["promo-code", code],
     queryFn: async (): Promise<PromoCode | null> => {
       const { data, error } = await supabase
         .from("promo_codes")
         .select("*")
-        .eq("code", "SOCIAL25")
+        .eq("code", code)
         .eq("active", true)
         .maybeSingle();
       if (error) throw error;
       return (data as unknown as PromoCode) ?? null;
     },
   });
+}
+
+export function useSocialPromoCode() {
+  return usePromoCodeByCode("SOCIAL25");
+}
+
+export function useFreeDeliveryPromoCode() {
+  return usePromoCodeByCode("BIENVENUE");
 }
