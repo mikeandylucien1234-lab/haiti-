@@ -520,7 +520,12 @@ export default function HomePage() {
 
       {(categoryFilter === "all" || categoryFilter === "combos") && <FreeDeliveryBanner />}
 
-      {categoryFilter === "all" && <SocialFollowSection />}
+      {categoryFilter === "all" && (
+        <>
+          <SectionTitle title="Offres & récompenses" subtitle="Des codes promo à utiliser à votre prochaine commande" />
+          <SocialFollowSection />
+        </>
+      )}
 
       {comboPicker && (
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40">
