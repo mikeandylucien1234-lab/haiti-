@@ -9,7 +9,7 @@ body,
 }
 
 body {
-  background-color: #e7e0ce;
+  background-color: #ffffff;
   font-family: "Figtree", system-ui, sans-serif;
   color: #1d2a1f;
   -webkit-tap-highlight-color: transparent;
@@ -27,7 +27,7 @@ h4 {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100dvh;
-  background: #f6f1e4;
+  background: #ffffff;
   position: relative;
   display: flex;
   flex-direction: column;

@@ -248,7 +248,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <header className="px-5 pt-6 pb-3 bg-brand-cream">
+      <header className="px-5 pt-6 pb-3 bg-white">
         <h1 className="sr-only">Kreyòl Délis — Pâtés & jus naturels</h1>
         <div className="flex items-center gap-2">
           <img
