@@ -123,27 +123,52 @@ supabase/
   page l'explique clairement : l'identité est anonyme et les informations restent sur
   l'appareil.
 
-## Paiement — MonCash / NatCash / paiement à la livraison
+## Paiement — MonCash / NatCash (transfert manuel vérifié) / paiement à la livraison
 
-Pour cette première mise en ligne, **aucune intégration de paiement en ligne réelle
-n'est branchée** — et je ne veux pas en inventer une : les API marchandes MonCash
-(Digicel) et NatCash (Natcom) demandent chacune un compte marchand, des identifiants
-d'API et une intégration testée avec leur documentation officielle, que je n'ai pas ici.
+Aucune API marchande MonCash/NatCash n'est branchée (ça demanderait un compte
+marchand et des identifiants que je n'ai pas). À la place, un vrai système de
+**paiement manuel avec preuve vérifiée par le restaurant** est intégré au checkout
+existant, sans rien reconstruire du panier/de la commande :
 
-Ce qui est réel aujourd'hui :
-- Le client choisit MonCash, NatCash ou paiement à la livraison ; ce choix est
-  enregistré avec la commande et visible par le restaurant.
-- **Paiement à la livraison** fonctionne tel quel : le livreur encaisse en espèces.
-- **MonCash / NatCash** sont pour l'instant des choix déclaratifs : le client indique
-  qu'il paiera par ce moyen, et le restaurant encaisse le paiement mobile directement
-  avec le client (par exemple en lui envoyant le numéro marchand par téléphone/SMS au
-  moment de la livraison ou de la préparation), comme un paiement à la livraison mais
-  par transfert mobile plutôt qu'en espèces.
+Parcours du client : Panier → Paiement → total affiché en lecture seule → choix
+MonCash/NatCash → coordonnées du compte `DELIS` (configurables, voir plus bas) →
+commande créée normalement (comme avant) → page **Preuve de paiement**
+(`/paiement/preuve/:orderId`) avec les instructions, le montant exact à transférer,
+un champ obligatoire pour le numéro de transaction et un fichier (JPG/PNG/WEBP/PDF,
+8 Mo max) → commande + suivi de commande passent en **« Paiement en attente de
+vérification »**.
 
-Recommandation pour la suite la plus simple qui fonctionne réellement : demander un
-compte marchand MonCash Business (Digicel) et suivre leur documentation d'intégration
-officielle pour un vrai paiement en ligne (redirection ou API). Je peux le brancher dès
-que vous avez ces accès — dites-moi et on avance étape par étape.
+Ce qui est réel, jamais simulé :
+- **Le montant ne vient jamais du navigateur.** Il est déjà figé sur la commande
+  (`orders.total_htg`, calculé côté serveur à la création) ; le formulaire de preuve
+  ne fait que l'afficher, il ne peut pas le modifier.
+- **Rien n'est confirmé automatiquement.** Envoyer une capture d'écran place la
+  commande en `payment_status = pending_verification`, jamais `confirmed`. Seul un
+  clic admin sur « Confirmer le paiement » (espace restaurant → badge « Paiements à
+  vérifier ») passe la commande à `confirmed` ; « Refuser » la passe à `rejected`
+  (le client peut alors renvoyer une nouvelle preuve). Tant que ce n'est pas
+  confirmé, le bouton pour démarrer la préparation reste désactivé côté admin.
+- **Numéro de transaction protégé contre les doublons** : un index unique en base
+  (`payment_method`, `transaction_number`) empêche qu'un même numéro serve deux fois,
+  vérifié aussi côté Edge Function avant l'enregistrement.
+- **Preuve stockée de façon sécurisée**, jamais juste dans le navigateur : bucket
+  Supabase Storage dédié `payment-proofs`, **privé** (contrairement aux photos de
+  maison) — seuls le client propriétaire de la commande et un compte admin peuvent y
+  accéder (URL signée, expirant après quelques minutes), jamais un autre client.
+- **Écriture uniquement via Edge Function** (`submit-payment-proof`, clé service) :
+  le client ne peut pas modifier une commande directement (RLS l'interdit), la
+  fonction revérifie que la commande lui appartient et qu'elle attend bien une
+  preuve avant d'accepter quoi que ce soit.
+- **Notifications réelles** : la page Notifications de l'accueil affiche l'état réel
+  du paiement de chaque commande (preuve à envoyer / en vérification / confirmé /
+  refusé), à partir des mêmes colonnes, jamais un texte générique.
+- **Paiement à la livraison** fonctionne comme avant : le livreur encaisse en
+  espèces, aucune preuve à envoyer (`payment_status = not_required`).
+
+Recommandation pour la suite la plus simple qui fonctionne sans vérification
+manuelle : demander un compte marchand MonCash Business (Digicel) et suivre leur
+documentation d'intégration officielle pour un vrai paiement en ligne (redirection ou
+API). Je peux le brancher dès que vous avez ces accès.
 
 ## Configuration locale
 

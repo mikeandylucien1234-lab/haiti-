@@ -108,6 +108,55 @@ export default function AdminSettingsPage() {
       </section>
 
       <section className="bg-white rounded-2xl border border-brand-cream-3 p-4">
+        <p className="font-semibold mb-1">Paiement MonCash / NatCash</p>
+        <p className="text-xs text-brand-sage mb-3">
+          Compte affiché au client pour effectuer son transfert manuel. Modifiable ici sans toucher au code.
+        </p>
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block">
+              <span className="block text-xs text-brand-sage mb-1">Nom du compte MonCash</span>
+              <input
+                type="text"
+                defaultValue={settings.moncash_name}
+                onBlur={(e) => save({ moncash_name: e.target.value.trim() || "DELIS" })}
+                className="w-full border border-brand-cream-3 rounded-lg px-2 py-1.5 text-sm"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-xs text-brand-sage mb-1">Numéro MonCash</span>
+              <input
+                type="text"
+                defaultValue={settings.moncash_number}
+                onBlur={(e) => save({ moncash_number: e.target.value.trim() })}
+                className="w-full border border-brand-cream-3 rounded-lg px-2 py-1.5 text-sm"
+              />
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block">
+              <span className="block text-xs text-brand-sage mb-1">Nom du compte NatCash</span>
+              <input
+                type="text"
+                defaultValue={settings.natcash_name}
+                onBlur={(e) => save({ natcash_name: e.target.value.trim() || "DELIS" })}
+                className="w-full border border-brand-cream-3 rounded-lg px-2 py-1.5 text-sm"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-xs text-brand-sage mb-1">Numéro NatCash</span>
+              <input
+                type="text"
+                defaultValue={settings.natcash_number}
+                onBlur={(e) => save({ natcash_number: e.target.value.trim() })}
+                className="w-full border border-brand-cream-3 rounded-lg px-2 py-1.5 text-sm"
+              />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white rounded-2xl border border-brand-cream-3 p-4">
         <p className="font-semibold mb-1">Réseaux sociaux</p>
         <p className="text-xs text-brand-sage mb-3">
           Utilisés par la section « Suivez-nous » de l'accueil. Elle reste cachée tant que les deux champs sont vides.

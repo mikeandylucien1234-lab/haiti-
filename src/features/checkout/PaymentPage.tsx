@@ -91,7 +91,11 @@ export default function PaymentPage() {
 
       clear();
       clearDraft();
-      navigate({ to: "/confirmation/$orderId", params: { orderId: data.order.id } });
+      if (method === "cash") {
+        navigate({ to: "/confirmation/$orderId", params: { orderId: data.order.id } });
+      } else {
+        navigate({ to: "/paiement/preuve/$orderId", params: { orderId: data.order.id } });
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Une erreur est survenue. Réessayez.");
     } finally {
@@ -142,10 +146,20 @@ export default function PaymentPage() {
           </button>
         ))}
 
-        {method !== "cash" && (
-          <p className="text-xs text-brand-sage px-1">
-            Une demande de paiement {method === "moncash" ? "MonCash" : "NatCash"} sera envoyée au +509{draft.phone}.
-          </p>
+        {method !== "cash" && settings && (
+          <div className="bg-brand-green-dark text-white rounded-2xl p-4">
+            <p className="text-[11px] uppercase tracking-wider text-white/60 font-semibold mb-2">
+              Transférez vers ce compte {method === "moncash" ? "MonCash" : "NatCash"}
+            </p>
+            <p className="text-lg font-extrabold">{method === "moncash" ? settings.moncash_name : settings.natcash_name}</p>
+            <p className="font-mono text-xl font-bold tracking-wider text-brand-gold mt-0.5">
+              {method === "moncash" ? settings.moncash_number : settings.natcash_number}
+            </p>
+            <p className="text-xs text-white/70 mt-2 leading-relaxed">
+              Après avoir choisi ce mode de paiement, vous pourrez envoyer votre numéro de transaction et votre reçu
+              à l'étape suivante.
+            </p>
+          </div>
         )}
 
         <div className="bg-white rounded-2xl border border-brand-cream-3 p-4">
@@ -211,7 +225,11 @@ export default function PaymentPage() {
           disabled={submitting || items.length === 0}
           className="w-full bg-brand-green-dark disabled:opacity-60 text-white rounded-full py-3.5 font-semibold"
         >
-          {submitting ? "Envoi de la commande…" : `Payer · ${formatHTG(total)}`}
+          {submitting
+            ? "Envoi de la commande…"
+            : method === "cash"
+              ? `Payer · ${formatHTG(total)}`
+              : `Continuer · ${formatHTG(total)}`}
         </button>
       </div>
     </div>

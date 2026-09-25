@@ -1,5 +1,6 @@
 export type PaymentMethod = "moncash" | "natcash" | "cash";
 export type OrderStatus = "received" | "preparing" | "delivering" | "delivered";
+export type PaymentStatus = "not_required" | "pending_proof" | "pending_verification" | "confirmed" | "rejected";
 
 export interface Settings {
   id: true;
@@ -11,6 +12,10 @@ export interface Settings {
   extra_viande_portion_htg: number;
   tiktok_url: string | null;
   instagram_url: string | null;
+  moncash_name: string;
+  moncash_number: string;
+  natcash_name: string;
+  natcash_number: string;
   updated_at: string;
 }
 
@@ -93,6 +98,12 @@ export interface OrderRow {
   location_source: "gps" | "manual";
   house_photo_url: string | null;
   payment_method: PaymentMethod;
+  payment_status: PaymentStatus;
+  transaction_number: string | null;
+  payment_proof_path: string | null;
+  payment_submitted_at: string | null;
+  payment_verified_at: string | null;
+  payment_verified_by: string | null;
   status: OrderStatus;
   subtotal_htg: number;
   delivery_fee_htg: number;

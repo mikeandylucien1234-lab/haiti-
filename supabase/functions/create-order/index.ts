@@ -334,6 +334,7 @@ Deno.serve(async (req) => {
       location_source: payload.location_source,
       house_photo_url: isOwnHousePhotoUrl(payload.house_photo_url, customerId) ? payload.house_photo_url : null,
       payment_method: payload.payment_method,
+      payment_status: payload.payment_method === "cash" ? "not_required" : "pending_proof",
       status: "received",
       subtotal_htg: subtotal,
       delivery_fee_htg: deliveryFee,

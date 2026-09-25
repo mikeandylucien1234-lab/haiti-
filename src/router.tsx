@@ -5,6 +5,7 @@ import BuilderPage from "@/features/builder/BuilderPage";
 import CartPage from "@/features/cart/CartPage";
 import DeliveryPage from "@/features/checkout/DeliveryPage";
 import PaymentPage from "@/features/checkout/PaymentPage";
+import PaymentProofPage from "@/features/checkout/PaymentProofPage";
 import ConfirmationPage from "@/features/checkout/ConfirmationPage";
 import OrdersPage from "@/features/orders/OrdersPage";
 import FavoritesPage from "@/features/catalog/FavoritesPage";
@@ -26,6 +27,11 @@ const builderRoute = createRoute({ getParentRoute: () => rootRoute, path: "/comp
 const cartRoute = createRoute({ getParentRoute: () => rootRoute, path: "/panier", component: CartPage });
 const deliveryRoute = createRoute({ getParentRoute: () => rootRoute, path: "/livraison", component: DeliveryPage });
 const paymentRoute = createRoute({ getParentRoute: () => rootRoute, path: "/paiement", component: PaymentPage });
+const paymentProofRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/paiement/preuve/$orderId",
+  component: PaymentProofPage,
+});
 const confirmationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/confirmation/$orderId",
@@ -72,6 +78,7 @@ const routeTree = rootRoute.addChildren([
   cartRoute,
   deliveryRoute,
   paymentRoute,
+  paymentProofRoute,
   confirmationRoute,
   ordersRoute,
   favoritesRoute,
