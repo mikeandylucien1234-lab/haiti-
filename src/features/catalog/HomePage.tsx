@@ -100,6 +100,11 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [comboPicker, setComboPicker] = useState<Combo | null>(null);
   const [addressSheetOpen, setAddressSheetOpen] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "pates" | "jus" | "combos">("all");
+
+  function toggleCategory(category: "pates" | "jus" | "combos") {
+    setCategoryFilter((prev) => (prev === category ? "all" : category));
+  }
 
   const minCuissonPrice = useMemo(
     () => (cuissons.length ? Math.min(...cuissons.map((c) => c.price_htg)) : null),
@@ -311,26 +316,52 @@ export default function HomePage() {
       )}
 
       <div className="px-5 mt-5 grid grid-cols-3 gap-3">
-        <Link
-          to="/composer"
-          className="rounded-2xl border-2 border-brand-gold bg-white flex flex-col items-center gap-2 py-4 px-2"
+        <button
+          onClick={() => toggleCategory("pates")}
+          className={`rounded-2xl border-2 bg-white flex flex-col items-center gap-2 py-4 px-2 ${
+            categoryFilter === "pates" ? "border-brand-gold" : "border-brand-cream-3"
+          }`}
         >
           <img src="/images/pate-hero.webp" alt="Pâtés" className="w-14 h-10 object-contain" />
           <span className="text-sm font-semibold text-brand-ink">Pâtés</span>
-        </Link>
-        <a href="#jus" className="rounded-2xl border border-brand-cream-3 bg-white flex flex-col items-center gap-2 py-4 px-2">
+        </button>
+        <button
+          onClick={() => toggleCategory("jus")}
+          className={`rounded-2xl border-2 bg-white flex flex-col items-center gap-2 py-4 px-2 ${
+            categoryFilter === "jus" ? "border-brand-gold" : "border-brand-cream-3"
+          }`}
+        >
           <img src="/images/jus-trio.webp" alt="Jus" className="w-14 h-10 object-contain" />
           <span className="text-sm font-semibold text-brand-ink">Jus</span>
-        </a>
-        <a href="#combos" className="rounded-2xl border border-brand-cream-3 bg-white flex flex-col items-center gap-2 py-4 px-2">
+        </button>
+        <button
+          onClick={() => toggleCategory("combos")}
+          className={`rounded-2xl border-2 bg-white flex flex-col items-center gap-2 py-4 px-2 ${
+            categoryFilter === "combos" ? "border-brand-gold" : "border-brand-cream-3"
+          }`}
+        >
           <img src="/images/combo-hero.webp" alt="Combos" className="w-14 h-10 object-contain" />
           <span className="text-sm font-semibold text-brand-ink">Combos</span>
-        </a>
+        </button>
       </div>
 
-      <HeroCarousel />
+      {categoryFilter !== "all" && (
+        <div className="px-5 mt-4">
+          <button
+            onClick={() => setCategoryFilter("all")}
+            className="flex items-center gap-1.5 text-sm font-semibold text-brand-green"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Tout voir
+          </button>
+        </div>
+      )}
 
-      {suggestions.length > 0 && (
+      {categoryFilter === "all" && <HeroCarousel />}
+
+      {categoryFilter === "all" && suggestions.length > 0 && (
         <>
           <SectionTitle title="Envie d'essayer ?" subtitle="Nos suggestions pour commencer" />
           <div className="px-5 flex gap-3 overflow-x-auto pb-1">
@@ -353,7 +384,7 @@ export default function HomePage() {
         </>
       )}
 
-      {bestSellers.length > 0 && (
+      {categoryFilter === "all" && bestSellers.length > 0 && (
         <>
           <SectionTitle title="Nos best-sellers" subtitle="Les préférés des Cayes cette semaine" />
           <div className="px-5 flex gap-3 overflow-x-auto pb-1">
@@ -373,6 +404,8 @@ export default function HomePage() {
         </>
       )}
 
+      {(categoryFilter === "all" || categoryFilter === "pates") && (
+        <>
       <SectionTitle
         title="Nos pâtés"
         subtitle="Frits ou au four, farce du jour"
@@ -405,13 +438,12 @@ export default function HomePage() {
           <span className="text-2xl">→</span>
         </Link>
       </div>
+        </>
+      )}
 
-      <div id="jus" />
-      <SectionTitle
-        title="Nos jus naturels"
-        subtitle="Pressés chaque matin · 33 cl"
-        action={{ label: "Tout voir", onClick: () => document.getElementById("jus")?.scrollIntoView({ behavior: "smooth" }) }}
-      />
+      {(categoryFilter === "all" || categoryFilter === "jus") && (
+        <>
+      <SectionTitle title="Nos jus naturels" subtitle="Pressés chaque matin · 33 cl" />
       <div className="px-5 flex gap-3 overflow-x-auto pb-1">
         {jus.map((j) => (
           <div key={j.id} className="min-w-[150px] bg-white rounded-2xl border border-brand-cream-3 p-3 relative">
@@ -450,8 +482,11 @@ export default function HomePage() {
           </div>
         ))}
       </div>
+        </>
+      )}
 
-      <div id="combos" />
+      {(categoryFilter === "all" || categoryFilter === "combos") && (
+        <>
       <SectionTitle title="Nos combos" subtitle="Pâté + jus, prix réduit" />
       <div className="px-5 flex flex-col gap-3">
         {combos.map((c) => (
@@ -478,8 +513,10 @@ export default function HomePage() {
           </div>
         ))}
       </div>
+        </>
+      )}
 
-      <SocialFollowSection />
+      {categoryFilter === "all" && <SocialFollowSection />}
 
       {comboPicker && (
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40">
