@@ -41,7 +41,7 @@ const NAV_ITEMS = [
   { to: "/", label: "Accueil", icon: HomeIcon },
   { to: "/favoris", label: "Favoris", icon: HeartIcon },
   { to: "/panier", label: "Panier", icon: BagIcon },
-  { to: "/mes-commandes", label: "Profil", icon: UserIcon },
+  { to: "/profil", label: "Profil", icon: UserIcon },
 ] as const;
 
 export default function RootLayout() {
@@ -57,7 +57,7 @@ export default function RootLayout() {
     );
   }
 
-  const showNav = ["/", "/mes-commandes", "/favoris"].includes(pathname);
+  const showNav = ["/", "/mes-commandes", "/favoris", "/profil"].includes(pathname);
 
   return (
     <div className="app-shell shadow-xl">

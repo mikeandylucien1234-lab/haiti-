@@ -6,6 +6,7 @@ import { isStoreOpenNow } from "@/lib/hours";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useCheckoutDraft } from "@/hooks/useCheckoutDraft";
+import { useMyOrders } from "@/hooks/useMyOrders";
 import AddressSheet from "@/features/checkout/AddressSheet";
 import SocialFollowSection from "@/features/catalog/SocialFollowSection";
 import FreeDeliveryBanner from "@/features/catalog/FreeDeliveryBanner";
@@ -94,6 +95,8 @@ export default function HomePage() {
   );
 
   const open = settings ? isStoreOpenNow(settings) : true;
+  const { orders: myOrders } = useMyOrders();
+  const hasActiveOrder = myOrders.some((o) => o.status !== "delivered");
 
   // Suggestions honnêtes pour donner envie dès le lancement : de vrais articles du
   // catalogue avec leur vrai prix, jamais présentées comme des commandes passées par
@@ -273,8 +276,8 @@ export default function HomePage() {
               </span>
             </button>
             <Link
-              to="/mes-commandes"
-              aria-label="Mes commandes"
+              to="/notifications"
+              aria-label="Notifications"
               className="relative w-9 h-9 rounded-full bg-brand-cream-2 flex items-center justify-center flex-shrink-0"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-brand-ink">
@@ -285,7 +288,7 @@ export default function HomePage() {
                 />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              {!open && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />}
+              {hasActiveOrder && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />}
             </Link>
           </div>
         </div>
