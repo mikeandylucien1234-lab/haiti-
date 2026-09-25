@@ -99,6 +99,13 @@ supabase/
   automatiquement qu'un client a vraiment suivi le compte, c'est une offre basée sur la
   confiance, comme la plupart des promos « suivez-nous » — pas une fausse activité
   présentée comme réelle.
+- **Bannière livraison gratuite** : juste après « Nos combos » sur l'accueil, une
+  bannière affiche le code `BIENVENUE` avec un petit carré à cliquer pour le copier.
+  Ce code utilise la même colonne `promo_codes.free_delivery` que l'Edge Function
+  vérifie côté serveur : au lieu d'une remise en gourdes, il annule exactement les
+  frais de livraison de la commande (jamais plus, jamais un montant envoyé par le
+  navigateur), et reste soumis aux mêmes protections anti-abus qu'un code normal (une
+  seule utilisation par client, par identité et par téléphone).
 
 ## Paiement — MonCash / NatCash / paiement à la livraison
 

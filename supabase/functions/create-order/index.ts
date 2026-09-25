@@ -307,7 +307,8 @@ Deno.serve(async (req) => {
       return json({ error: "Ce code promo a déjà été utilisé." }, 400);
     }
 
-    discount = Math.min(promo.discount_htg, subtotal + deliveryFee);
+    const rawDiscount = promo.free_delivery ? deliveryFee : promo.discount_htg;
+    discount = Math.min(rawDiscount, subtotal + deliveryFee);
     appliedPromoCode = requestedCode;
   }
 

@@ -37,7 +37,8 @@ export default function PaymentPage() {
     setPromoStatus("checking");
     const { data } = await supabase.from("promo_codes").select("*").eq("code", code).eq("active", true).maybeSingle();
     if (data) {
-      setPromoDiscount((data as { discount_htg: number }).discount_htg);
+      const promo = data as { discount_htg: number; free_delivery: boolean };
+      setPromoDiscount(promo.free_delivery ? deliveryFee : promo.discount_htg);
       setPromoStatus("valid");
     } else {
       setPromoDiscount(0);

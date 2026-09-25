@@ -8,6 +8,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useCheckoutDraft } from "@/hooks/useCheckoutDraft";
 import AddressSheet from "@/features/checkout/AddressSheet";
 import SocialFollowSection from "@/features/catalog/SocialFollowSection";
+import FreeDeliveryBanner from "@/features/catalog/FreeDeliveryBanner";
 import type { CartComboItem, CartJusItem } from "@/types/cart";
 import type { Combo } from "@/types/database";
 
@@ -516,6 +517,8 @@ export default function HomePage() {
       </div>
         </>
       )}
+
+      {(categoryFilter === "all" || categoryFilter === "combos") && <FreeDeliveryBanner />}
 
       {categoryFilter === "all" && <SocialFollowSection />}
 
