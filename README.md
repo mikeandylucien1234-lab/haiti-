@@ -106,6 +106,22 @@ supabase/
   frais de livraison de la commande (jamais plus, jamais un montant envoyé par le
   navigateur), et reste soumis aux mêmes protections anti-abus qu'un code normal (une
   seule utilisation par client, par identité et par téléphone).
+- **Notifications** (`/notifications`, accessible via la cloche de l'accueil) : une
+  vraie page, pas une maquette. Elle liste l'état réel de chaque commande du client
+  (reçue → préparation → livraison → livrée, avec l'heure relative de la dernière
+  mise à jour, poussée en direct par Supabase Realtime) ainsi que les offres
+  actuellement actives (`BIENVENUE`, `SOCIAL25`). La pastille rouge sur la cloche ne
+  s'allume que s'il existe une vraie commande en cours (statut différent de « livrée »)
+  — jamais une fausse alerte.
+- **Profil** (`/profil`) : remplace l'onglet qui renvoyait vers l'historique de
+  commandes par une vraie page de profil. Affiche le nom/téléphone et l'adresse de
+  livraison enregistrés localement (avec accès direct pour les modifier), le nombre
+  réel de commandes et de favoris, des raccourcis vers Notifications/Commandes/Favoris,
+  et une section « À propos » avec les horaires, la zone de livraison, les frais de
+  livraison et les réseaux sociaux — toutes ces valeurs viennent de la table
+  `settings`, jamais codées en dur. Comme il n'y a pas de compte avec mot de passe, la
+  page l'explique clairement : l'identité est anonyme et les informations restent sur
+  l'appareil.
 
 ## Paiement — MonCash / NatCash / paiement à la livraison
 

@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { supabase, ensureCustomerSession } from "@/lib/supabase";
+import { useMyOrders } from "@/hooks/useMyOrders";
 import { formatHTG } from "@/lib/format";
-import type { OrderRow, OrderStatus } from "@/types/database";
+import type { OrderStatus } from "@/types/database";
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   received: "Commande reçue",
@@ -12,36 +11,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 };
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<OrderRow[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      await ensureCustomerSession();
-      const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-      if (active) {
-        setOrders((data as OrderRow[]) ?? []);
-        setLoading(false);
-      }
-    })();
-
-    const channel = supabase
-      .channel("my-orders")
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
-        supabase
-          .from("orders")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .then(({ data }) => active && setOrders((data as OrderRow[]) ?? []));
-      })
-      .subscribe();
-
-    return () => {
-      active = false;
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  const { orders, loading } = useMyOrders();
 
   return (
     <div className="pb-10">
