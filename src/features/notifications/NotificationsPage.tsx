@@ -1,8 +1,63 @@
 import type { ReactNode } from "react";
-import { useRouter } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { useMyOrders } from "@/hooks/useMyOrders";
 import { useFreeDeliveryPromoCode, useSocialPromoCode } from "@/features/catalog/queries";
-import type { OrderRow, OrderStatus } from "@/types/database";
+import type { OrderRow, OrderStatus, PaymentStatus } from "@/types/database";
+
+const PAYMENT_META: Partial<
+  Record<PaymentStatus, { title: string; message: (n: string) => string; color: string; cta?: boolean }>
+> = {
+  pending_proof: {
+    title: "Preuve de paiement à envoyer",
+    message: (n) => `Envoyez votre numéro de transaction et votre reçu pour la commande ${n}.`,
+    color: "bg-brand-gold text-brand-green-dark",
+    cta: true,
+  },
+  pending_verification: {
+    title: "Paiement en vérification",
+    message: (n) => `Votre preuve de paiement pour la commande ${n} est en cours de vérification.`,
+    color: "bg-brand-cream-2 text-brand-green-dark",
+  },
+  rejected: {
+    title: "Paiement refusé",
+    message: (n) => `Votre preuve de paiement pour la commande ${n} n'a pas été validée. Envoyez-en une nouvelle.`,
+    color: "bg-red-100 text-red-700",
+    cta: true,
+  },
+  confirmed: {
+    title: "Paiement confirmé",
+    message: (n) => `Le paiement de votre commande ${n} a été confirmé.`,
+    color: "bg-brand-green text-white",
+  },
+};
+
+function PaymentNotification({ order }: { order: OrderRow }) {
+  const meta = PAYMENT_META[order.payment_status];
+  if (!meta) return null;
+  return (
+    <div className="flex items-start gap-3 bg-white rounded-2xl border border-brand-cream-3 p-4">
+      <span className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${meta.color}`}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <rect x="2" y="5" width="20" height="14" rx="2.5" />
+          <path d="M2 10h20" strokeLinecap="round" />
+        </svg>
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-sm">{meta.title}</p>
+        <p className="text-xs text-brand-sage mt-0.5 leading-relaxed">{meta.message(order.order_number)}</p>
+        {meta.cta && (
+          <Link
+            to="/paiement/preuve/$orderId"
+            params={{ orderId: order.id }}
+            className="inline-block text-xs font-bold text-brand-green mt-1.5"
+          >
+            Envoyer la preuve →
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const STATUS_META: Record<OrderStatus, { title: string; message: (n: string) => string; icon: ReactNode; color: string }> = {
   received: {
@@ -128,7 +183,10 @@ export default function NotificationsPage() {
             <>
               <p className="text-xs font-semibold uppercase tracking-wider text-brand-sage px-1">Vos commandes</p>
               {orders.map((o) => (
-                <OrderNotification key={o.id} order={o} />
+                <div key={o.id} className="flex flex-col gap-3">
+                  {o.payment_method !== "cash" && <PaymentNotification order={o} />}
+                  <OrderNotification order={o} />
+                </div>
               ))}
             </>
           )}

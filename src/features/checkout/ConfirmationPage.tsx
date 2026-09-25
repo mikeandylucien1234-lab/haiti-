@@ -4,6 +4,27 @@ import { supabase } from "@/lib/supabase";
 import { formatHTG } from "@/lib/format";
 import type { OrderRow, OrderStatus } from "@/types/database";
 
+const PAYMENT_STATUS_BANNER: Partial<Record<string, { tone: string; text: string; cta?: boolean }>> = {
+  pending_proof: {
+    tone: "border-brand-gold bg-brand-gold-light/40 text-brand-green-dark",
+    text: "Il manque votre preuve de paiement pour que cette commande soit traitée.",
+    cta: true,
+  },
+  pending_verification: {
+    tone: "border-brand-gold bg-brand-gold-light/40 text-brand-green-dark",
+    text: "Paiement en attente de vérification par le restaurant.",
+  },
+  rejected: {
+    tone: "border-red-300 bg-red-50 text-red-700",
+    text: "Votre preuve de paiement n'a pas été validée. Envoyez-en une nouvelle.",
+    cta: true,
+  },
+  confirmed: {
+    tone: "border-brand-green bg-brand-green/10 text-brand-green-dark",
+    text: "Paiement confirmé ✓",
+  },
+};
+
 const STEPS: { status: OrderStatus; title: string; description: string }[] = [
   { status: "received", title: "Commande reçue", description: "Nous avons bien reçu votre commande" },
   { status: "preparing", title: "En préparation", description: "Vos pâtés sortent de la friteuse" },
@@ -87,6 +108,26 @@ export default function ConfirmationPage() {
           </div>
         </div>
       </div>
+
+      {order.payment_method !== "cash" &&
+        (() => {
+          const banner = PAYMENT_STATUS_BANNER[order.payment_status];
+          if (!banner) return null;
+          return (
+            <div className={`rounded-2xl border p-4 mt-4 flex items-center justify-between gap-3 ${banner.tone}`}>
+              <p className="text-sm font-medium">{banner.text}</p>
+              {banner.cta && (
+                <Link
+                  to="/paiement/preuve/$orderId"
+                  params={{ orderId: order.id }}
+                  className="flex-shrink-0 text-xs font-bold underline whitespace-nowrap"
+                >
+                  Envoyer la preuve
+                </Link>
+              )}
+            </div>
+          );
+        })()}
 
       <div className="bg-white rounded-2xl border border-brand-cream-3 p-5 mt-5">
         <p className="font-bold mb-4">Suivi de commande</p>
