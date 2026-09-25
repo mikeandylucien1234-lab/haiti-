@@ -35,7 +35,20 @@ function SectionTitle({
   );
 }
 
-const HERO_SLIDES = [{ image: "/images/banner-1-clean.webp" }, { image: "/images/banner-accompagnements.webp" }];
+const HERO_SLIDES = [
+  {
+    image: "/images/banner-1.webp",
+    kicker: "Gou se vrè",
+    title: "natirèl !",
+    text: "Pâté ki fè w sonje lakay, ak jî natirèl ki plen gou.",
+  },
+  {
+    image: "/images/banner-2.webp",
+    kicker: "Bon gou,",
+    title: "natirèlman !",
+    text: "Pâté ki fè w sonje lakay, ak jî natirèl ki plen gou.",
+  },
+];
 
 function HeroCarousel() {
   const [index, setIndex] = useState(0);
@@ -44,7 +57,13 @@ function HeroCarousel() {
       <div className="rounded-2xl overflow-hidden relative bg-brand-green text-white">
         {HERO_SLIDES.map((slide, i) => (
           <div key={slide.image} className={i === index ? "block" : "hidden"}>
-            <img src={slide.image} alt="" className="w-full h-36 object-cover" />
+            <img src={slide.image} alt="" className="w-full h-36 object-cover opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-green-dark/90 via-brand-green-dark/40 to-transparent flex flex-col justify-center px-5">
+              <img src="/images/logo.webp" alt="" className="w-9 h-9 rounded-full mb-2" />
+              <p className="text-sm font-semibold">{slide.kicker}</p>
+              <p className="text-xl font-extrabold text-brand-gold">{slide.title}</p>
+              <p className="text-[11px] mt-1 max-w-[65%] opacity-90">{slide.text}</p>
+            </div>
           </div>
         ))}
       </div>
