@@ -54,7 +54,7 @@ export default function SocialFollowSection() {
   }
 
   return (
-    <div className="px-5 mt-8">
+    <div className="px-5">
       <div
         className="relative overflow-hidden rounded-[1.75rem] text-white shadow-lg"
         style={{ background: "linear-gradient(155deg,#1E4D2B 0%,#143820 65%,#0f2c18 100%)" }}
