@@ -386,9 +386,9 @@ export default function HomePage() {
       {categoryFilter === "all" && suggestions.length > 0 && (
         <>
           <SectionTitle title="Envie d'essayer ?" subtitle="Nos suggestions pour commencer" />
-          <div className="px-5 grid grid-cols-2 gap-3">
+          <div className="px-5 flex gap-3 overflow-x-auto pb-1">
             {suggestions.map((it) => (
-              <div key={it.key} className="bg-white rounded-2xl border border-brand-cream-3 p-3">
+              <div key={it.key} className="min-w-[150px] bg-white rounded-2xl border border-brand-cream-3 p-3">
                 <img src={it.image} alt="" className="w-full h-20 object-contain mb-2" />
                 <p className="font-semibold text-sm text-brand-ink truncate">{it.label}</p>
                 <p className="text-xs text-brand-sage truncate">{it.detail}</p>
