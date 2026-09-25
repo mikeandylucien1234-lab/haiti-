@@ -118,7 +118,9 @@ export default function HomePage() {
   // d'autres clients (voir la discussion avec le patron : pas de fausse preuve sociale).
   const suggestions = useMemo(() => {
     const boeuf = viandes.find((v) => v.slug === "boeuf");
+    const poulet = viandes.find((v) => v.slug === "poulet");
     const mangue = jus.find((j) => j.slug === "mangue");
+    const ananas = jus.find((j) => j.slug === "ananas");
     const items: { key: string; image: string; label: string; detail: string; unitPrice: number; onClick: () => void }[] = [];
     if (boeuf && minCuissonPrice != null) {
       items.push({
@@ -130,6 +132,16 @@ export default function HomePage() {
         onClick: () => navigate({ to: "/composer", search: { viande: "boeuf" } as never }),
       });
     }
+    if (poulet && minCuissonPrice != null) {
+      items.push({
+        key: "sg-pate-poulet",
+        image: poulet.image_path,
+        label: "Pâté poulet",
+        detail: "Frit à l'huile · Poulet · épicé",
+        unitPrice: minCuissonPrice + poulet.price_htg,
+        onClick: () => navigate({ to: "/composer", search: { viande: "poulet" } as never }),
+      });
+    }
     if (mangue) {
       items.push({
         key: "sg-jus-mangue",
@@ -138,6 +150,16 @@ export default function HomePage() {
         detail: mangue.description,
         unitPrice: mangue.price_htg,
         onClick: () => quickAddJus(mangue),
+      });
+    }
+    if (ananas) {
+      items.push({
+        key: "sg-jus-ananas",
+        image: ananas.image_path,
+        label: ananas.name,
+        detail: ananas.description,
+        unitPrice: ananas.price_htg,
+        onClick: () => quickAddJus(ananas),
       });
     }
     return items;
@@ -364,20 +386,18 @@ export default function HomePage() {
       {categoryFilter === "all" && suggestions.length > 0 && (
         <>
           <SectionTitle title="Envie d'essayer ?" subtitle="Nos suggestions pour commencer" />
-          <div className="px-5 flex gap-3 overflow-x-auto pb-1">
+          <div className="px-5 grid grid-cols-2 gap-3">
             {suggestions.map((it) => (
-              <div key={it.key} className="min-w-[220px] bg-white rounded-2xl border border-brand-cream-3 p-3 flex gap-3">
-                <img src={it.image} alt="" className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-brand-ink truncate">{it.label}</p>
-                  <p className="text-xs text-brand-sage truncate">{it.detail}</p>
-                  <button
-                    onClick={it.onClick}
-                    className="mt-1 text-xs font-semibold bg-brand-gold-light text-brand-green-dark rounded-full px-2.5 py-1"
-                  >
-                    Ajouter · {formatHTG(it.unitPrice)}
-                  </button>
-                </div>
+              <div key={it.key} className="bg-white rounded-2xl border border-brand-cream-3 p-3">
+                <img src={it.image} alt="" className="w-full h-20 object-contain mb-2" />
+                <p className="font-semibold text-sm text-brand-ink truncate">{it.label}</p>
+                <p className="text-xs text-brand-sage truncate">{it.detail}</p>
+                <button
+                  onClick={it.onClick}
+                  className="mt-1.5 text-xs font-semibold bg-brand-gold-light text-brand-green-dark rounded-full px-2.5 py-1"
+                >
+                  Ajouter · {formatHTG(it.unitPrice)}
+                </button>
               </div>
             ))}
           </div>
